@@ -1,3 +1,3 @@
-module github.com/mmmmmmmingor/minikv
+module minikv
 
-go 1.15
+go 1.16
