@@ -1,4 +1,4 @@
-package src
+package minikv
 
 type BloomFilter struct {
 	K          int
@@ -22,7 +22,7 @@ func (bf *BloomFilter) Generate(keys [][]byte) []byte {
 		h := Hash(keys[i])
 		for t := 0; t < bf.K; t++ {
 			idx := (h%bf.bitLen + bf.bitLen) % bf.bitLen // 获取索引位
-			bf.result[idx/8] |= 1 << (idx % 8) // why?
+			bf.result[idx/8] |= 1 << (idx % 8)           // why?
 			delta := (h >> 17) | (h << 15)
 			h += delta
 		}
@@ -30,11 +30,11 @@ func (bf *BloomFilter) Generate(keys [][]byte) []byte {
 	return bf.result
 }
 
-func (bf *BloomFilter)Contains(key []byte) bool {
-	 h := Hash(key)
+func (bf *BloomFilter) Contains(key []byte) bool {
+	h := Hash(key)
 	for t := 0; t < bf.K; t++ {
-		idx := (h % bf.bitLen + bf.bitLen) % bf.bitLen;
-		if (bf.result[idx / 8] & (1 << (idx % 8))) == 0 {
+		idx := (h%bf.bitLen + bf.bitLen) % bf.bitLen
+		if (bf.result[idx/8] & (1 << (idx % 8))) == 0 {
 			return false
 		}
 		delta := (h >> 17) | (h << 15)
