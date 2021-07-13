@@ -22,5 +22,4 @@ func TestBloomFilter(t *testing.T) {
 	println(bf.Contains([]byte("hi")))
 
 	fmt.Println("test over")
-
 }
