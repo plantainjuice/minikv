@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="df449c24-7e67-42a6-9d1b-608a28e0e612" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/util.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/minikv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/bloomfilter.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/bloomfilter.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/bloomfilter_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/test/bloomfilter_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,6 +41,24 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
+  <component name="RunManager">
+    <configuration name="TestBloomFilter in minikv/test" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="minikv" />
+      <working_directory value="$PROJECT_DIR$/test" />
+      <framework value="gotest" />
+      <kind value="PACKAGE" />
+      <package value="minikv/test" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <pattern value="^\QTestBloomFilter\E$" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Test.TestBloomFilter in minikv/test" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
@@ -61,6 +75,22 @@
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
     <state x="797" y="425" key="EnvironmentVariablesDialog/0.0.1792.1120@0.0.1792.1120" timestamp="1626101009294" />
+    <state width="1750" height="318" key="GridCell.Tab.0.bottom" timestamp="1626104407727">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state width="1750" height="318" key="GridCell.Tab.0.bottom/0.0.1792.1120@0.0.1792.1120" timestamp="1626104407727" />
+    <state width="1750" height="318" key="GridCell.Tab.0.center" timestamp="1626104407726">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state width="1750" height="318" key="GridCell.Tab.0.center/0.0.1792.1120@0.0.1792.1120" timestamp="1626104407726" />
+    <state width="1750" height="318" key="GridCell.Tab.0.left" timestamp="1626104407725">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state width="1750" height="318" key="GridCell.Tab.0.left/0.0.1792.1120@0.0.1792.1120" timestamp="1626104407725" />
+    <state width="1750" height="318" key="GridCell.Tab.0.right" timestamp="1626104407727">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state width="1750" height="318" key="GridCell.Tab.0.right/0.0.1792.1120@0.0.1792.1120" timestamp="1626104407727" />
     <state x="405" y="196" key="SettingsEditor" timestamp="1626101341259">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
