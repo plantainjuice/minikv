@@ -15,7 +15,7 @@ func Hash(key []byte) int {
 
 func ToBytesUint8(i uint8) []byte {
 	bytes := make([]byte, 1)
-	bytes[0] = byte(uint8)
+	bytes[0] = i
 	return bytes
 }
 
