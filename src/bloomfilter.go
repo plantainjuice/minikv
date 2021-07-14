@@ -1,4 +1,4 @@
-package minikv
+package src
 
 type BloomFilter struct {
 	K          int

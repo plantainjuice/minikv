@@ -1,4 +1,4 @@
-package minikv
+package src
 
 import (
 	"errors"
@@ -6,7 +6,6 @@ import (
 )
 
 
-//todo 改为动态创建解析
 const (
 	RAW_KEY_LEN_SIZE = 4
 	VAL_LEN_SIZE     = 4

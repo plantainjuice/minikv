@@ -1,4 +1,4 @@
-package minikv
+package src
 
 import "encoding/binary"
 
