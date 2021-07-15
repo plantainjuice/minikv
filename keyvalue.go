@@ -26,7 +26,7 @@ const (
 	DELETE Op = 1
 )
 
-func NewKeyValue(key, value []byte, op Op, sequenceId uint64) {
+func NewKeyValue(key, value []byte, op Op, sequenceId uint64) KeyValue {
 	if len(key) == 0 || len(value) == 0 || op < 0 || sequenceId < 0 {
 		log.Fatal(errors.New("NewKeyValue param invalid"))
 	}
@@ -55,11 +55,11 @@ func (kv KeyValue) GetSequenceId() uint64 {
 }
 
 func (kv KeyValue) GetRawKeyLen() uint32 {
-	return len(kv.key) + OP_SIZE + SEQ_ID_SIZE
+	return uint32(len(kv.key) + OP_SIZE + SEQ_ID_SIZE)
 }
 
 func (kv KeyValue) GetSerializeSize() uint32 {
-	return RAW_KEY_LEN_SIZE + VAL_LEN_SIZE + kv.GetRawKeyLen() + len(kv.value)
+	return RAW_KEY_LEN_SIZE + uint32(VAL_LEN_SIZE) + kv.GetRawKeyLen() + uint32(len(kv.value))
 }
 
 func (kv KeyValue) ToBytes() ([]byte, error) {
@@ -68,29 +68,27 @@ func (kv KeyValue) ToBytes() ([]byte, error) {
 	bytes := make([]byte, kv.GetSerializeSize())
 
 	// Encode raw key length
-	rawKeyLenBytes := util.ToBytesUint32(rawKeyLen)
-	bytes[pos:RAW_KEY_LEN_SIZE] = rawKeyLenBytes
-	pos += RAW_KEY_LEN_SIZE
+	rawKeyLenBytes := ToBytesUint32(rawKeyLen)
+	for i := 0; pos < RAW_KEY_LEN_SIZE; pos++ {
+		bytes[pos] = rawKeyLenBytes[i]
+		i++
+	}
 
 	// Encode value length
-	valLenBytes := util.ToBytesUint32(len(kv.value))
-	bytes[pos:VAL_LEN_SIZE] = valLenBytes
-	pos += VAL_LEN_SIZE
+	valLenBytes := ToBytesUint32(uint32(len(kv.value)))
+	bytes = append(bytes, valLenBytes[:]...)
 
 	// Encode key
-	bytes[pos:len(kv.key)] = kv.key
-	pos += len(kv.key)
+	bytes = append(bytes, kv.key...)
 
 	// Encode Op
-	bytes[pos : pos+1] = util.ToBytesUint8(kv.op)
-	pos += 1
+	bytes = append(bytes, ToBytesUint8(kv.op)...)
 
 	// Encode sequenceId
-	seqIdBytes := util.ToBytesUint64(kv.sequenceId)
-	bytes[pos:SEQ_ID_SIZE] = seqIdBytes
-	pos += SEQ_ID_SIZE
+	bytes = append(bytes, ToBytesUint64(kv.sequenceId)...)
 
 	// Encode value
-	bytes[pos:len(kv.value)] = kv.value
+	bytes = append(bytes, kv.value...)
+
 	return bytes, nil
 }

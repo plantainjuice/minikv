@@ -1,6 +1,9 @@
 minikv
 .idea/
-
+src
+.idea
 
 */*.a
 */*.exe
+
+

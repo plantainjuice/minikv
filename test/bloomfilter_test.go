@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mmmmmmmingor/minikv/minikv"
+	"github.com/mmmmmmmingor/minikv"
 )
 
 func TestBloomFilter(t *testing.T) {
-
 	var bf = &minikv.BloomFilter{K: 3, BitsPerKey: 10}
 
 	keys := []string{"hello world", "hi", "bloom", "filter", "key", "value", "1", "value"}
