@@ -13,20 +13,42 @@ func Hash(key []byte) int {
 	return h
 }
 
-func ToBytesUint8(i uint8) []byte {
+func Uint8ToBytes(i uint8) []byte {
 	bytes := make([]byte, 1)
 	bytes[0] = i
 	return bytes
 }
 
-func ToBytesUint32(i uint32) []byte {
+func Int32ToBytes(i int32) []byte {
+	bytes := make([]byte, 4)
+	binary.BigEndian.PutUint32(bytes, uint32(i))
+	return bytes
+}
+
+func Uint32ToBytes(i uint32) []byte {
 	bytes := make([]byte, 4)
 	binary.BigEndian.PutUint32(bytes, i)
 	return bytes
 }
 
-func ToBytesUint64(i uint64) []byte {
+func Uint64ToBytes(i uint64) []byte {
 	bytes := make([]byte, 8)
 	binary.BigEndian.PutUint64(bytes, i)
 	return bytes
+}
+
+func BytesToUint32(buf []byte) uint32 {
+	return binary.BigEndian.Uint32(buf)
+}
+
+func BytesToUint64(buf []byte) uint64 {
+	return binary.BigEndian.Uint64(buf)
+}
+
+func BytesToInt32(buf []byte) int32 {
+	return int32(binary.BigEndian.Uint32(buf))
+}
+
+func BytesToInt64(buf []byte) int64 {
+	return int64(binary.BigEndian.Uint64(buf))
 }

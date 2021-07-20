@@ -3,7 +3,14 @@ package minikv
 import (
 	"errors"
 	"log"
+	"strconv"
 )
+
+/*
+ * ┌───────────┬──────────┬───────────────────────┬──┬──────────┬──────────────────────────────────────┐
+ * │ rawKeyLen │ valueLen │        key            │op│sequencId │             value                    │
+ * └───────────┴──────────┴───────────────────────┴──┴──────────┴──────────────────────────────────────┘
+ */
 
 const (
 	RAW_KEY_LEN_SIZE = 4
@@ -62,33 +69,73 @@ func (kv KeyValue) GetSerializeSize() uint32 {
 	return RAW_KEY_LEN_SIZE + uint32(VAL_LEN_SIZE) + kv.GetRawKeyLen() + uint32(len(kv.value))
 }
 
+func (kv KeyValue) ToString() string {
+	return string(kv.key) + string(kv.value) + string(kv.op) + strconv.FormatUint(kv.sequenceId, 10)
+}
+
 func (kv KeyValue) ToBytes() ([]byte, error) {
 	rawKeyLen := kv.GetRawKeyLen()
 	pos := 0
 	bytes := make([]byte, kv.GetSerializeSize())
 
 	// Encode raw key length
-	rawKeyLenBytes := ToBytesUint32(rawKeyLen)
-	for i := 0; pos < RAW_KEY_LEN_SIZE; pos++ {
-		bytes[pos] = rawKeyLenBytes[i]
-		i++
-	}
+	buf := Uint32ToBytes(rawKeyLen)
+	copy(bytes[pos:pos+4], buf)
+	pos += 4
 
 	// Encode value length
-	valLenBytes := ToBytesUint32(uint32(len(kv.value)))
-	bytes = append(bytes, valLenBytes[:]...)
+	buf = Uint32ToBytes(uint32(len(kv.value)))
+	copy(bytes[pos:pos+4], buf)
+	pos += 4
 
 	// Encode key
-	bytes = append(bytes, kv.key...)
+	copy(bytes[pos:pos+len(kv.key)], kv.key)
+	pos += len(kv.key)
 
 	// Encode Op
-	bytes = append(bytes, ToBytesUint8(kv.op)...)
+	buf = Uint8ToBytes(kv.op)
+	copy(bytes[pos:pos+1], buf)
+	pos += 1
 
 	// Encode sequenceId
-	bytes = append(bytes, ToBytesUint64(kv.sequenceId)...)
+	buf = Uint64ToBytes(kv.sequenceId)
+	copy(bytes[pos:pos+8], buf)
+	pos += 8
 
 	// Encode value
-	bytes = append(bytes, kv.value...)
+	copy(bytes[pos:pos+len(kv.value)], kv.value)
+	pos += len(kv.value)
 
 	return bytes, nil
+}
+
+func ParseFrom(bytes []byte) KeyValue {
+	if RAW_KEY_LEN_SIZE+VAL_LEN_SIZE >= len(bytes) {
+		log.Fatalln("Invalid len. len: " + strconv.Itoa(len(bytes)))
+	}
+	// Decode raw key length
+	pos := 0
+	rawKeyLen := BytesToUint32(bytes[pos : pos+RAW_KEY_LEN_SIZE])
+	pos += RAW_KEY_LEN_SIZE
+
+	// Decode value length
+	valLen := BytesToUint32(bytes[pos : pos+VAL_LEN_SIZE])
+	pos += VAL_LEN_SIZE
+
+	// Decode key
+	keyLen := rawKeyLen - OP_SIZE - SEQ_ID_SIZE
+	key := bytes[pos : pos+int(keyLen)]
+	pos += int(keyLen)
+
+	// Decode Op
+	op := Op(bytes[pos])
+	pos += 1
+
+	// Decode sequenceId
+	sequenceId := BytesToUint64(bytes[pos : pos+SEQ_ID_SIZE])
+	pos += SEQ_ID_SIZE
+
+	// Decode value
+	val := bytes[pos : pos+int(valLen)]
+	return NewKeyValue(key, val, op, sequenceId)
 }

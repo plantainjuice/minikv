@@ -3,13 +3,17 @@ package test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/mmmmmmmingor/minikv"
 )
 
 func TestKeyValue(t *testing.T) {
-	value := minikv.NewKeyValue(minikv.ToBytesUint32(1), minikv.ToBytesUint32(2), minikv.PUT, 3)
-	bytes, _ := value.ToBytes()
-	for i := 0; i < len(bytes); i++ {
-		print(bytes[i])
-	}
+	kv := minikv.NewKeyValue([]byte("key"), []byte("value"), minikv.PUT, 3)
+	bytes, _ := kv.ToBytes()
+
+	kv2 := minikv.ParseFrom(bytes)
+	bytes2, _ := kv2.ToBytes()
+
+	assert.Equal(t, bytes, bytes2, "should be equal")
 }
