@@ -47,6 +47,8 @@ func (df *DiskFile) Open(filename string) {
 	if err != nil || df.fileSize != minikv.BytesToUint64(buffer) {
 		log.Fatalln("read filesize error")
 	}
+	println(n)
+
 	offset += 8
 
 	buffer = make([]byte, 4)
