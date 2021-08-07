@@ -22,13 +22,20 @@ type SkipList struct {
 	HeadNodeArr []*Node
 }
 
+// 初始化跳表
+func NewSkipList() *SkipList {
+	list := new(SkipList)
+	list.Level = -1                            // 设置层级别
+	list.HeadNodeArr = make([]*Node, MaxLevel) // 初始化头节点数组
+	rand.Seed(time.Now().UnixNano())
+	return list
+}
 
 // level-(n)	 nil
 //
 // level-(1)    Head <-> Node0 <-----------> Node2 <-----------> Node4 <-----------> nil
 // 				           |				   |
 // level-(0)    Head <-> Node0 <-> Node1 <-> Node2 <-> Node3 <-> Node4 <-> Node5 <-> nil
-
 
 // 从顶部开始找起， 相当于一棵树，从树的根节点找起
 func (list SkipList) HasNode(value int) *Node {
@@ -41,7 +48,7 @@ func (list SkipList) HasNode(value int) *Node {
 			} else if node.Value > value {
 				// 如果节点的值大于传入的值，就应该返回上个节点并进入下一层
 				if node.Prev.Down == nil {
-					if level-1 >= 0 {// 初始化头部节点没有相互链接
+					if level-1 >= 0 { // 初始化头部节点没有相互链接
 						node = list.HeadNodeArr[level-1].Next
 					} else { // 最后一层
 						node = nil
@@ -68,7 +75,7 @@ func (list SkipList) HasNode(value int) *Node {
 
 // 删除节点
 func (list *SkipList) DeleteNode(value int) {
-	
+
 	node := list.HasNode(value)
 	if node == nil {
 		return
@@ -88,11 +95,12 @@ func (list *SkipList) DeleteNode(value int) {
 
 // 添加数据到跳表中
 func (list *SkipList) AddNode(value int) {
+	// 如果包含相同的数据，就返回，不用添加了
 	if list.HasNode(value) != nil {
-		// 如果包含相同的数据，就返回，不用添加了
 		return
 	}
 	headNodeInsertPositionArr := make([]*Node, MaxLevel)
+
 	// 如果不包含数据，就查找每一层的插入位置
 	if list.Level >= 0 {
 		// 只有层级在大于等于 0 的时候在进行循环判断，如果层级小于 0 说明是没有任何数据
@@ -129,7 +137,6 @@ func (list *SkipList) AddNode(value int) {
 	}
 
 	list.InsertValue(value, headNodeInsertPositionArr)
-
 }
 
 func (list *SkipList) InsertValue(value int, headNodeInsertPositionArr []*Node) {
@@ -176,7 +183,7 @@ func (list *SkipList) InsertValue(value int, headNodeInsertPositionArr []*Node) 
 
 			rootNode.Next = upNode
 			if nextNode != nil {
-				nextNode.Prev = node
+				nextNode.Prev = upNode
 			}
 
 			node = upNode
@@ -184,7 +191,7 @@ func (list *SkipList) InsertValue(value int, headNodeInsertPositionArr []*Node) 
 			currentLevel++
 		}
 		// 这里注意，要更新树才加树，不然没过的也将树变成 0 层
-		if(currentLevel - 1 == list.Level+1){// 如果加了高度
+		if currentLevel-1 == list.Level+1 { // 如果加了高度
 			list.Level = currentLevel - 1
 		}
 	}
@@ -193,16 +200,7 @@ func (list *SkipList) InsertValue(value int, headNodeInsertPositionArr []*Node) 
 // 通过抛硬币决定是否加入下一层
 func randLevel() bool {
 	randNum := rand.Intn(2)
-	return randNum == 1 
-}
-
-// 初始化跳表
-func newSkipList() *SkipList {
-	list := new(SkipList)
-	list.Level = -1                            // 设置层级别
-	list.HeadNodeArr = make([]*Node, MaxLevel) // 初始化头节点数组
-	rand.Seed(time.Now().UnixNano())
-	return list
+	return randNum == 1
 }
 
 func checkSeq(list *SkipList) bool {
@@ -211,10 +209,10 @@ func checkSeq(list *SkipList) bool {
 		last := node
 		first := true
 		for node != nil {
-			if(first){
+			if first {
 				first = false
-			}else {
-				if(last.Value >= node.Value){
+			} else {
+				if last.Value >= node.Value {
 					return false
 				}
 				last = node
@@ -231,10 +229,10 @@ func checkLoop(list *SkipList) bool {
 		flag := node
 		first := false
 		for node != nil {
-			if(!first && node == flag) {
+			if !first && node == flag {
 				first = true
-			}else if(first && node == flag ){
-				return true;
+			} else if first && node == flag {
+				return true
 			}
 			node = node.Next
 		}
@@ -242,41 +240,36 @@ func checkLoop(list *SkipList) bool {
 	return false
 }
 
-
-
 func printSkipList(list *SkipList) {
 	fmt.Println("====================start=============== " + strconv.Itoa(list.Level))
 	for i := list.Level; i >= 0; i-- {
 		node := list.HeadNodeArr[i].Next
 		fmt.Print("level " + strconv.Itoa(i) + "\t")
 		for node != nil {
-			fmt.Print(strconv.Itoa(node.Value) + " -> ")
+			fmt.Print(strconv.Itoa(node.Value) + " <-> ")
 			node = node.Next
 		}
-		fmt.Println("next")
+		fmt.Println("nil")
 	}
 	fmt.Println("====================end===============")
 	fmt.Println()
-
 }
 
 func TestSkipList(t *testing.T) {
-	list := newSkipList()
-	for i := 0 ; i < 250 ; i++ {
+	list := NewSkipList()
+	for i := 0; i < 250; i++ {
 		insert := rand.Intn(1000)
-		fmt.Println(insert)
+		t.Log(insert)
 		list.AddNode(insert)
 		printSkipList(list)
-		if(!checkSeq(list)){
-			fmt.Println("error ")
-			break;
+		if !checkSeq(list) {
+			t.Fatal("seq error")
+			break
 		}
 
-		if(checkLoop((list))){
-			fmt.Println("loop")
-			break;
+		if checkLoop((list)) {
+			t.Fatal("loop error")
+			break
 		}
 	}
-
-
 }
