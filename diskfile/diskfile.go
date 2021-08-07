@@ -43,7 +43,7 @@ func (df *DiskFile) Open(filename string) {
 	offset := int64(df.fileSize - TRAILER_SIZE)
 
 	buffer := make([]byte, 8)
-	n, err := df.in.ReadAt(buffer, offset)
+	_, err = df.in.ReadAt(buffer, offset)
 	if err != nil || df.fileSize != minikv.BytesToUint64(buffer) {
 		log.Fatalln("read filesize error")
 	}

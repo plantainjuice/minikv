@@ -17,7 +17,7 @@ type BlockMeta struct {
 	bloomfilter []byte
 }
 
-func New(lastKv minikv.KeyValue, blockOffset, blockSize uint64, bloomfilter []byte) BlockMeta {
+func NewBlockMeta(lastKv minikv.KeyValue, blockOffset, blockSize uint64, bloomfilter []byte) BlockMeta {
 	return BlockMeta{
 		lastKV:      lastKv,
 		blockOffset: blockOffset,
@@ -27,7 +27,7 @@ func New(lastKv minikv.KeyValue, blockOffset, blockSize uint64, bloomfilter []by
 }
 
 func CreateSeekDummy(lastKv minikv.KeyValue) BlockMeta {
-	return New(lastKv, 0, 0, []byte{})
+	return NewBlockMeta(lastKv, 0, 0, []byte{})
 }
 
 func (bm BlockMeta) GetSerializeSize() int {
@@ -82,5 +82,5 @@ func ParseFrom(bytes []byte) BlockMeta {
 
 	bloomFilter := bytes[pos : pos+int(bloomFilterSize)]
 
-	return New(lastKv, blockOffset, blockSize, bloomFilter)
+	return NewBlockMeta(lastKv, blockOffset, blockSize, bloomFilter)
 }
