@@ -184,7 +184,7 @@ func (list *SkipList) InsertValue(value int, headNodeInsertPositionArr []*Node) 
 			currentLevel++
 		}
 		// 这里注意，要更新树才加树，不然没过的也将树变成 0 层
-		if(currentLevel - 1 > list.Level){
+		if(currentLevel - 1 == list.Level+1){// 如果加了高度
 			list.Level = currentLevel - 1
 		}
 	}
@@ -205,6 +205,45 @@ func newSkipList() *SkipList {
 	return list
 }
 
+func checkSeq(list *SkipList) bool {
+	for i := list.Level; i >= 0; i-- {
+		node := list.HeadNodeArr[i].Next
+		last := node
+		first := true
+		for node != nil {
+			if(first){
+				first = false
+			}else {
+				if(last.Value >= node.Value){
+					return false
+				}
+				last = node
+			}
+			node = node.Next
+		}
+	}
+	return true
+}
+
+func checkLoop(list *SkipList) bool {
+	for i := list.Level; i >= 0; i-- {
+		node := list.HeadNodeArr[i].Next
+		flag := node
+		first := false
+		for node != nil {
+			if(!first && node == flag) {
+				first = true
+			}else if(first && node == flag ){
+				return true;
+			}
+			node = node.Next
+		}
+	}
+	return false
+}
+
+
+
 func printSkipList(list *SkipList) {
 	fmt.Println("====================start=============== " + strconv.Itoa(list.Level))
 	for i := list.Level; i >= 0; i-- {
@@ -217,18 +256,27 @@ func printSkipList(list *SkipList) {
 		fmt.Println("next")
 	}
 	fmt.Println("====================end===============")
+	fmt.Println()
 
 }
 
 func TestSkipList(t *testing.T) {
 	list := newSkipList()
 	for i := 0 ; i < 250 ; i++ {
-		list.AddNode(rand.Intn(1000))
-		if(i == 200){
-			fmt.Println("200")
+		insert := rand.Intn(1000)
+		fmt.Println(insert)
+		list.AddNode(insert)
+		printSkipList(list)
+		if(!checkSeq(list)){
+			fmt.Println("error ")
+			break;
+		}
+
+		if(checkLoop((list))){
+			fmt.Println("loop")
+			break;
 		}
 	}
-	printSkipList(list)
 
 
 }
