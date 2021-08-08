@@ -6,10 +6,12 @@ import (
 	"strconv"
 )
 
-/*
+/*	keyValue struct
  * ┌───────────┬──────────┬───────────────────────┬──┬──────────┬──────────────────────────────────────┐
  * │ rawKeyLen │ valueLen │        key            │op│sequencId │             value                    │
  * └───────────┴──────────┴───────────────────────┴──┴──────────┴──────────────────────────────────────┘
+ * |----4------|----4-----|---------- var --------| 1|-----8----|-------------- var -------------------|
+ * |-----------8----------|--------------- rawKeyLen -----------|-------------- valueLen --------------|
  */
 
 const (
@@ -34,7 +36,7 @@ const (
 )
 
 func NewKeyValue(key, value []byte, op Op, sequenceId uint64) KeyValue {
-	if len(key) == 0 || len(value) == 0 || op < 0 || sequenceId < 0 {
+	if len(key) == 0 || len(value) == 0  {
 		log.Fatal(errors.New("NewKeyValue param invalid"))
 	}
 	return KeyValue{
