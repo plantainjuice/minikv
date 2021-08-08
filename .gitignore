@@ -6,4 +6,6 @@ src
 */*.a
 */*.exe
 
+.vscode/
+
 
