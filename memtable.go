@@ -46,20 +46,18 @@ func (m *MemStore) flushIfNeeded(shouldBlocking bool) error {
 }
 
 func flusherTask(m *MemStore) {
-	
-		m.UpdateLock.Lock()
-		m.Snapshot = m.SkipList
-		// TODO MemStoreIter may find the kvMap changed ? should synchronize ?
-		m.SkipList = NewSkipList(m.Config.LevelDBMaxHeight)
-		m.DataSize = 0
-		m.UpdateLock.Unlock()
-	
+	m.UpdateLock.Lock()
+	m.Snapshot = m.SkipList
+	// TODO MemStoreIter may find the kvMap changed ? should synchronize ?
+	m.SkipList = NewSkipList(m.Config.LevelDBMaxHeight)
+	m.DataSize = 0
+	m.UpdateLock.Unlock()
 
 	success := false
-	for i:= 0 ; i < m.Config.FlushMaxRetries; i++{
+	for i := 0; i < m.Config.FlushMaxRetries; i++ {
 		//TODO here
 	}
-	
+
 	if success {
 		// TODO MemStoreIter may get a NPE because we set null here ? should synchronize ?
 		m.Snapshot = nil

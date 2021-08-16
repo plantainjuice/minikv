@@ -24,6 +24,12 @@ type DiskFile struct {
 	blockIndexSize   uint64
 }
 
+func NewDiskFile(filename string) *DiskFile {
+	df := &DiskFile{}
+	df.Open(filename)
+	return df
+}
+
 func (df *DiskFile) Open(filename string) {
 	df.fname = filename
 
@@ -90,4 +96,9 @@ func (df *DiskFile) Open(filename string) {
 		var meta BlockMeta = ParseFrom(buffer)
 		haveRead += meta.GetSerializeSize()
 	}
+}
+
+func (df *DiskFile) Close() error {
+	err := df.in.Close()
+	return err
 }
