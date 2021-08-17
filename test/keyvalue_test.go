@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/mmmmmmmingor/minikv"
+	minikv "github.com/mmmmmmmingor/minikv/keyvalue"
 )
 
 func TestKeyValue(t *testing.T) {

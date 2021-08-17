@@ -1,4 +1,4 @@
-package minikv
+package core
 
 type Config struct {
 	MaxMemstoreSize   int
@@ -16,5 +16,5 @@ var DefaultConfig = Config{
 	DataDir:           "minikv",
 	MaxDiskFiles:      10,
 	MaxThreadPoolSize: 5,
-	LevelDBMaxHeight: 12,
+	LevelDBMaxHeight:  12,
 }

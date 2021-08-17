@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mmmmmmmingor/minikv"
+	"github.com/mmmmmmmingor/minikv/util"
 )
 
 func TestBloomFilter(t *testing.T) {
@@ -13,7 +13,7 @@ func TestBloomFilter(t *testing.T) {
 	time.Sleep(time.Millisecond * 1000)
 	fmt.Printf("time.Now().Format(\"20060102150405\"): %v\n", time.Now().Format("20060102150405"))
 
-	var bf = &minikv.BloomFilter{K: 3, BitsPerKey: 10}
+	var bf = &util.BloomFilter{K: 3, BitsPerKey: 10}
 
 	keys := []string{"hello world", "hi", "bloom", "filter", "key", "value", "1", "value"}
 

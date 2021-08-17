@@ -1,7 +1,8 @@
 package diskfile
 
 import (
-	"github.com/mmmmmmmingor/minikv"
+	kv "github.com/mmmmmmmingor/minikv/keyvalue"
+	"github.com/mmmmmmmingor/minikv/util"
 )
 
 const (
@@ -11,14 +12,14 @@ const (
 )
 
 type BlockMeta struct {
-	lastKV      minikv.KeyValue
+	lastKV      kv.KeyValue
 	blockOffset uint64
 	blockSize   uint64
 	bloomfilter []byte
 }
 
-func NewBlockMeta(lastKv minikv.KeyValue, blockOffset, blockSize uint64, bloomfilter []byte) BlockMeta {
-	return BlockMeta{
+func NewBlockMeta(lastKv kv.KeyValue, blockOffset, blockSize uint64, bloomfilter []byte) *BlockMeta {
+	return &BlockMeta{
 		lastKV:      lastKv,
 		blockOffset: blockOffset,
 		blockSize:   blockOffset,
@@ -26,7 +27,7 @@ func NewBlockMeta(lastKv minikv.KeyValue, blockOffset, blockSize uint64, bloomfi
 	}
 }
 
-func CreateSeekDummy(lastKv minikv.KeyValue) BlockMeta {
+func CreateSeekDummy(lastKv kv.KeyValue) *BlockMeta {
 	return NewBlockMeta(lastKv, 0, 0, []byte{})
 }
 
@@ -45,17 +46,17 @@ func (bm BlockMeta) ToBytes() []byte {
 	pos += len(buffer)
 
 	// block offset
-	buffer = minikv.Uint64ToBytes(bm.blockOffset)
+	buffer = util.Uint64ToBytes(bm.blockOffset)
 	copy(bytes[pos:pos+len(buffer)], buffer)
 	pos += len(buffer)
 
 	// block size
-	buffer = minikv.Uint64ToBytes(bm.blockSize)
+	buffer = util.Uint64ToBytes(bm.blockSize)
 	copy(bytes[pos:pos+len(buffer)], buffer)
 	pos += len(buffer)
 
 	// bloom filter len
-	buffer = minikv.Uint32ToBytes(uint32(len(bm.bloomfilter)))
+	buffer = util.Uint32ToBytes(uint32(len(bm.bloomfilter)))
 	copy(bytes[pos:pos+len(buffer)], buffer)
 	pos += len(buffer)
 
@@ -65,19 +66,19 @@ func (bm BlockMeta) ToBytes() []byte {
 	return bytes
 }
 
-func ParseFrom(bytes []byte) BlockMeta {
+func ParseFrom(bytes []byte) *BlockMeta {
 	pos := 0
 
-	lastKv := minikv.ParseFrom(bytes)
+	lastKv := kv.ParseFrom(bytes)
 	pos += int(lastKv.GetSerializeSize())
 
-	blockOffset := minikv.BytesToUint64(bytes[pos : pos+OFFSET_SIZE])
+	blockOffset := util.BytesToUint64(bytes[pos : pos+OFFSET_SIZE])
 	pos += OFFSET_SIZE
 
-	blockSize := minikv.BytesToUint64(bytes[pos : pos+SIZE_SIZE])
+	blockSize := util.BytesToUint64(bytes[pos : pos+SIZE_SIZE])
 	pos += SIZE_SIZE
 
-	bloomFilterSize := minikv.BytesToUint32(bytes[pos : pos+BF_LEN_SIZE])
+	bloomFilterSize := util.BytesToUint32(bytes[pos : pos+BF_LEN_SIZE])
 	pos += BF_LEN_SIZE
 
 	bloomFilter := bytes[pos : pos+int(bloomFilterSize)]

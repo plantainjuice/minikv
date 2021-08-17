@@ -3,8 +3,8 @@ package test
 import (
 	"testing"
 
-	"github.com/mmmmmmmingor/minikv"
 	"github.com/mmmmmmmingor/minikv/diskfile"
+	minikv "github.com/mmmmmmmingor/minikv/keyvalue"
 )
 
 func TestBlockMeta(t *testing.T) {

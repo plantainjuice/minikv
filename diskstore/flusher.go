@@ -4,8 +4,8 @@ type Flusher struct {
 	diskStore *DiskStore
 }
 
-func NewFlusher(diskStore *DiskStore) Flusher {
-	return Flusher{
+func NewFlusher(diskStore *DiskStore) *Flusher {
+	return &Flusher{
 		diskStore: diskStore,
 	}
 }

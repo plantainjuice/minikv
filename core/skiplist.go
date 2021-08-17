@@ -1,4 +1,4 @@
-package minikv
+package core
 
 import (
 	"fmt"

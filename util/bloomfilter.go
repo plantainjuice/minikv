@@ -1,10 +1,17 @@
-package minikv
+package util
 
 type BloomFilter struct {
 	K          int
 	BitsPerKey int
 	bitLen     int
 	result     []byte
+}
+
+func NewBloomFilter(k, bitsPerKey int) *BloomFilter {
+	return &BloomFilter{
+		K:          k,
+		BitsPerKey: bitsPerKey,
+	}
 }
 
 func (bf *BloomFilter) Generate(keys [][]byte) []byte {

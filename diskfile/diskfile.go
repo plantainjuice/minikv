@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/mmmmmmmingor/minikv"
+	"github.com/mmmmmmmingor/minikv/util"
 )
 
 const (
@@ -50,7 +50,7 @@ func (df *DiskFile) Open(filename string) {
 
 	buffer := make([]byte, 8)
 	_, err = df.in.ReadAt(buffer, offset)
-	if err != nil || df.fileSize != minikv.BytesToUint64(buffer) {
+	if err != nil || df.fileSize != util.BytesToUint64(buffer) {
 		log.Fatalln("read filesize error")
 	}
 
@@ -62,7 +62,7 @@ func (df *DiskFile) Open(filename string) {
 		log.Fatalln("read blockCount error")
 	}
 	offset += 4
-	df.blockCount = minikv.BytesToUint32(buffer)
+	df.blockCount = util.BytesToUint32(buffer)
 
 	buffer = make([]byte, 8)
 	_, err = df.in.ReadAt(buffer, offset)
@@ -70,7 +70,7 @@ func (df *DiskFile) Open(filename string) {
 		log.Fatalln("read blockIndexOffset error")
 	}
 	offset += 8
-	df.blockIndexOffset = minikv.BytesToUint64(buffer)
+	df.blockIndexOffset = util.BytesToUint64(buffer)
 
 	buffer = make([]byte, 8)
 	_, err = df.in.ReadAt(buffer, offset)
@@ -78,11 +78,11 @@ func (df *DiskFile) Open(filename string) {
 		log.Fatalln("read blockIndexSize error")
 	}
 	offset += 8
-	df.blockIndexSize = minikv.BytesToUint64(buffer)
+	df.blockIndexSize = util.BytesToUint64(buffer)
 
 	buffer = make([]byte, 8)
 	_, err = df.in.ReadAt(buffer, offset)
-	if err != nil || DISK_FILE_MAGIC != minikv.BytesToUint64(buffer) {
+	if err != nil || DISK_FILE_MAGIC != util.BytesToUint64(buffer) {
 		log.Fatalln("read Magic number error")
 	}
 	offset += 8
@@ -93,7 +93,7 @@ func (df *DiskFile) Open(filename string) {
 
 	haveRead := 0
 	for haveRead < len(buffer) {
-		var meta BlockMeta = ParseFrom(buffer)
+		meta := ParseFrom(buffer)
 		haveRead += meta.GetSerializeSize()
 	}
 }

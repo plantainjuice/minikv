@@ -1,9 +1,11 @@
-package minikv
+package core
 
 import (
 	"errors"
 	"log"
 	"strconv"
+
+	"github.com/mmmmmmmingor/minikv/util"
 )
 
 /*	keyValue struct
@@ -36,7 +38,7 @@ const (
 )
 
 func NewKeyValue(key, value []byte, op Op, sequenceId uint64) KeyValue {
-	if len(key) == 0 || len(value) == 0  {
+	if len(key) == 0 || len(value) == 0 {
 		log.Fatal(errors.New("NewKeyValue param invalid"))
 	}
 	return KeyValue{
@@ -81,12 +83,12 @@ func (kv KeyValue) ToBytes() ([]byte, error) {
 	bytes := make([]byte, kv.GetSerializeSize())
 
 	// Encode raw key length
-	buf := Uint32ToBytes(rawKeyLen)
+	buf := util.Uint32ToBytes(rawKeyLen)
 	copy(bytes[pos:pos+4], buf)
 	pos += 4
 
 	// Encode value length
-	buf = Uint32ToBytes(uint32(len(kv.value)))
+	buf = util.Uint32ToBytes(uint32(len(kv.value)))
 	copy(bytes[pos:pos+4], buf)
 	pos += 4
 
@@ -95,12 +97,12 @@ func (kv KeyValue) ToBytes() ([]byte, error) {
 	pos += len(kv.key)
 
 	// Encode Op
-	buf = Uint8ToBytes(kv.op)
+	buf = util.Uint8ToBytes(kv.op)
 	copy(bytes[pos:pos+1], buf)
 	pos += 1
 
 	// Encode sequenceId
-	buf = Uint64ToBytes(kv.sequenceId)
+	buf = util.Uint64ToBytes(kv.sequenceId)
 	copy(bytes[pos:pos+8], buf)
 	pos += 8
 
@@ -117,11 +119,11 @@ func ParseFrom(bytes []byte) KeyValue {
 	}
 	// Decode raw key length
 	pos := 0
-	rawKeyLen := BytesToUint32(bytes[pos : pos+RAW_KEY_LEN_SIZE])
+	rawKeyLen := util.BytesToUint32(bytes[pos : pos+RAW_KEY_LEN_SIZE])
 	pos += RAW_KEY_LEN_SIZE
 
 	// Decode value length
-	valLen := BytesToUint32(bytes[pos : pos+VAL_LEN_SIZE])
+	valLen := util.BytesToUint32(bytes[pos : pos+VAL_LEN_SIZE])
 	pos += VAL_LEN_SIZE
 
 	// Decode key
@@ -134,7 +136,7 @@ func ParseFrom(bytes []byte) KeyValue {
 	pos += 1
 
 	// Decode sequenceId
-	sequenceId := BytesToUint64(bytes[pos : pos+SEQ_ID_SIZE])
+	sequenceId := util.BytesToUint64(bytes[pos : pos+SEQ_ID_SIZE])
 	pos += SEQ_ID_SIZE
 
 	// Decode value

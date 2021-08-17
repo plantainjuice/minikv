@@ -1,14 +1,17 @@
-package minikv
+package core
 
 import (
 	"fmt"
 	"sync"
 	"sync/atomic"
+
+	"github.com/mmmmmmmingor/minikv/diskstore"
 )
 
 type MemStore struct {
 	DataSize uint64
 	Config   *Config
+	flusher  *diskstore.Flusher
 
 	SkipList *SkipList
 	Snapshot *SkipList
@@ -17,11 +20,12 @@ type MemStore struct {
 	IsSnapshotFlushing int32
 }
 
-func NewMemStore(config *Config) (memStore *MemStore) {
-	memStore = new(MemStore)
+func NewMemStore(config *Config, flusher *diskstore.Flusher) *MemStore {
+	memStore := new(MemStore)
 	memStore.Config = config
 	memStore.SkipList = NewSkipList(config.LevelDBMaxHeight)
-	return
+	memStore.flusher = flusher
+	return memStore
 }
 
 func (m *MemStore) Add(kv *KeyValue) {
