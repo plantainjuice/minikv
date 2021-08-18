@@ -3,7 +3,7 @@ package diskfile
 import (
 	"hash/crc32"
 
-	"github.com/mmmmmmmingor/minikv/core"
+	"github.com/mmmmmmmingor/minikv/core/entry"
 	"github.com/mmmmmmmingor/minikv/util"
 )
 
@@ -14,11 +14,11 @@ const (
 
 type BlockWriter struct {
 	totalSize     int
-	kvBuf         []*core.KeyValue
+	kvBuf         []*entry.KeyValue
 	bloomFilter   util.BloomFilter
 	crc           *crc32.Table
 	checkSum      uint32
-	lastKV        *core.KeyValue
+	lastKV        *entry.KeyValue
 	keyValueCount int
 }
 
@@ -26,7 +26,7 @@ func NewBlockWriter() *BlockWriter {
 	return &BlockWriter{
 		totalSize:     0,
 		keyValueCount: 0,
-		kvBuf:         make([]*core.KeyValue, 0),
+		kvBuf:         make([]*entry.KeyValue, 0),
 		bloomFilter: *util.NewBloomFilter(
 			BLOOM_FILTER_HASH_COUNT,
 			BLOOM_FILTER_BITS_PER_KEY),
@@ -34,7 +34,7 @@ func NewBlockWriter() *BlockWriter {
 	}
 }
 
-func (bw *BlockWriter) Append(kv *core.KeyValue) {
+func (bw *BlockWriter) Append(kv *entry.KeyValue) {
 	bw.kvBuf = append(bw.kvBuf, kv)
 	bw.lastKV = kv
 

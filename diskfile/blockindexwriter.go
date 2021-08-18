@@ -1,6 +1,6 @@
 package diskfile
 
-import kv "github.com/mmmmmmmingor/minikv/keyvalue"
+import "github.com/mmmmmmmingor/minikv/core/entry"
 
 type BlockIndexWriter struct {
 	blockMetas []*BlockMeta
@@ -14,7 +14,7 @@ func NewBlockIndexWriter() *BlockIndexWriter {
 	}
 }
 
-func (biw *BlockIndexWriter) append(lastKV kv.KeyValue, offset uint64, size uint64, bloomFilter []byte) {
+func (biw *BlockIndexWriter) append(lastKV entry.KeyValue, offset uint64, size uint64, bloomFilter []byte) {
 	meta := NewBlockMeta(lastKV, offset, size, bloomFilter)
 	biw.blockMetas = append(biw.blockMetas, meta)
 	biw.totalBytes += meta.GetSerializeSize()

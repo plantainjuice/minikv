@@ -5,6 +5,7 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/mmmmmmmingor/minikv/core/entry"
 	"github.com/mmmmmmmingor/minikv/diskstore"
 )
 
@@ -28,7 +29,7 @@ func NewMemStore(config *Config, flusher *diskstore.Flusher) *MemStore {
 	return memStore
 }
 
-func (m *MemStore) Add(kv *KeyValue) {
+func (m *MemStore) Add(kv *entry.KeyValue) {
 	m.flushIfNeeded(true)
 	m.UpdateLock.RLock()
 	m.SkipList.AddNode(kv)

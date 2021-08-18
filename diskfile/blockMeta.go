@@ -1,7 +1,7 @@
 package diskfile
 
 import (
-	kv "github.com/mmmmmmmingor/minikv/keyvalue"
+	"github.com/mmmmmmmingor/minikv/core/entry"
 	"github.com/mmmmmmmingor/minikv/util"
 )
 
@@ -12,13 +12,13 @@ const (
 )
 
 type BlockMeta struct {
-	lastKV      kv.KeyValue
+	lastKV      entry.KeyValue
 	blockOffset uint64
 	blockSize   uint64
 	bloomfilter []byte
 }
 
-func NewBlockMeta(lastKv kv.KeyValue, blockOffset, blockSize uint64, bloomfilter []byte) *BlockMeta {
+func NewBlockMeta(lastKv entry.KeyValue, blockOffset, blockSize uint64, bloomfilter []byte) *BlockMeta {
 	return &BlockMeta{
 		lastKV:      lastKv,
 		blockOffset: blockOffset,
@@ -27,7 +27,7 @@ func NewBlockMeta(lastKv kv.KeyValue, blockOffset, blockSize uint64, bloomfilter
 	}
 }
 
-func CreateSeekDummy(lastKv kv.KeyValue) *BlockMeta {
+func CreateSeekDummy(lastKv entry.KeyValue) *BlockMeta {
 	return NewBlockMeta(lastKv, 0, 0, []byte{})
 }
 
@@ -69,7 +69,7 @@ func (bm BlockMeta) ToBytes() []byte {
 func ParseFrom(bytes []byte) *BlockMeta {
 	pos := 0
 
-	lastKv := kv.ParseFrom(bytes)
+	lastKv := entry.ParseFrom(bytes)
 	pos += int(lastKv.GetSerializeSize())
 
 	blockOffset := util.BytesToUint64(bytes[pos : pos+OFFSET_SIZE])

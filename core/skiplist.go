@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/mmmmmmmingor/minikv/core/entry"
 )
 
 // level-(n)	 nil
@@ -15,10 +17,10 @@ import (
 // level-(0)    Head <-> Node0 <-> Node1 <-> Node2 <-> Node3 <-> Node4 <-> Node5 <-> nil
 
 type Node struct {
-	KV   *KeyValue // 存储任何类型
-	Prev *Node     // 同层前节点
-	Next *Node     // 同层后节点
-	Down *Node     // 下层同节点
+	KV   *entry.KeyValue // 存储任何类型
+	Prev *Node           // 同层前节点
+	Next *Node           // 同层后节点
+	Down *Node           // 下层同节点
 }
 
 type SkipList struct {
@@ -47,7 +49,7 @@ func compare(a, b []byte) int {
 }
 
 // 从顶部开始找起， 相当于一棵树，从树的根节点找起
-func (list SkipList) HasNode(kv *KeyValue) *Node {
+func (list SkipList) HasNode(kv *entry.KeyValue) *Node {
 	if list.Level >= 0 {
 		level := list.Level
 		node := list.HeadNodeArr[level].Next
@@ -83,7 +85,7 @@ func (list SkipList) HasNode(kv *KeyValue) *Node {
 }
 
 // 删除节点
-func (list *SkipList) DeleteNode(kv *KeyValue) {
+func (list *SkipList) DeleteNode(kv *entry.KeyValue) {
 	//todo 如果顶层只有一个节点删除后会不会异常？
 	node := list.HasNode(kv)
 	if node == nil {
@@ -102,7 +104,7 @@ func (list *SkipList) DeleteNode(kv *KeyValue) {
 }
 
 // 添加数据到跳表中
-func (list *SkipList) AddNode(kv *KeyValue) {
+func (list *SkipList) AddNode(kv *entry.KeyValue) {
 	// 如果包含相同的数据，就返回，不用添加了
 	if list.HasNode(kv) != nil {
 		return
@@ -147,7 +149,7 @@ func (list *SkipList) AddNode(kv *KeyValue) {
 	list.InsertValue(kv, headNodeInsertPositionArr)
 }
 
-func (list *SkipList) InsertValue(kv *KeyValue, headNodeInsertPositionArr []*Node) {
+func (list *SkipList) InsertValue(kv *entry.KeyValue, headNodeInsertPositionArr []*Node) {
 	// 插入最底层
 	node := new(Node)
 	node.KV = kv
