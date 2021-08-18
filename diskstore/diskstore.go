@@ -77,13 +77,13 @@ func (ds DiskStore) NextDiskFileId() int64 {
 	return atomic.AddInt64(&ds.maxFileId, 1)
 }
 
-func (ds *DiskStore) AddDickFile(df *diskfile.DiskFile) {
+func (ds *DiskStore) AddDiskFile(df *diskfile.DiskFile) {
 	ds.updateLock.Lock()
 	defer ds.updateLock.Unlock()
 	ds.diskFiles = append(ds.diskFiles, df)
 }
 
-func (ds *DiskStore) AddDiskFile(fileName string) {
+func (ds *DiskStore) AddDiskFile1(fileName string) {
 	df := diskfile.NewDiskFile(fileName)
 	ds.diskFiles = append(ds.diskFiles, df)
 }
