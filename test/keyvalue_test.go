@@ -5,14 +5,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/mmmmmmmingor/minikv/core/entry"
+	"github.com/mmmmmmmingor/minikv/core"
 )
 
 func TestKeyValue(t *testing.T) {
-	kv := entry.NewKeyValue([]byte("key"), []byte("value"), entry.PUT, 3)
+	kv := core.NewKeyValue([]byte("key"), []byte("value"), core.PUT, 3)
 	bytes, _ := kv.ToBytes()
 
-	kv2 := entry.ParseFrom(bytes)
+	kv2 := core.ParseFrom1(bytes)
 	bytes2, _ := kv2.ToBytes()
 
 	assert.Equal(t, bytes, bytes2, "should be equal")

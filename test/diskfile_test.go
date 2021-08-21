@@ -3,14 +3,13 @@ package test
 import (
 	"testing"
 
-	"github.com/mmmmmmmingor/minikv/core/entry"
-	"github.com/mmmmmmmingor/minikv/diskfile"
+	"github.com/mmmmmmmingor/minikv/core"
 )
 
 func TestBlockMeta(t *testing.T) {
-	kv := entry.NewKeyValue([]byte("key"), []byte("value"), entry.PUT, 3)
+	kv := core.NewKeyValue([]byte("key"), []byte("value"), core.PUT, 3)
 	bloomFilter := []byte("bloomFilter")
 
-	diskfile.NewBlockMeta(kv, 0, 0, bloomFilter)
+	core.NewBlockMeta(kv, 0, 0, bloomFilter)
 
 }

@@ -5,14 +5,12 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/mmmmmmmingor/minikv/core/entry"
-	"github.com/mmmmmmmingor/minikv/diskstore"
 )
 
 type MemStore struct {
 	DataSize uint64
 	Config   *Config
-	flusher  *diskstore.Flusher
+	flusher  *Flusher
 
 	SkipList *SkipList
 	Snapshot *SkipList
@@ -21,7 +19,7 @@ type MemStore struct {
 	IsSnapshotFlushing int32
 }
 
-func NewMemStore(config *Config, flusher *diskstore.Flusher) *MemStore {
+func NewMemStore(config *Config, flusher *Flusher) *MemStore {
 	memStore := new(MemStore)
 	memStore.Config = config
 	memStore.SkipList = NewSkipList(config.LevelDBMaxHeight)
@@ -29,7 +27,7 @@ func NewMemStore(config *Config, flusher *diskstore.Flusher) *MemStore {
 	return memStore
 }
 
-func (m *MemStore) Add(kv *entry.KeyValue) {
+func (m *MemStore) Add(kv *KeyValue) {
 	m.flushIfNeeded(true)
 	m.UpdateLock.RLock()
 	m.SkipList.AddNode(kv)
@@ -61,6 +59,8 @@ func flusherTask(m *MemStore) {
 	success := false
 	for i := 0; i < m.Config.FlushMaxRetries; i++ {
 		//TODO here
+		// m.flusher.Flush(m.SkipList.)
+		success = true
 	}
 
 	if success {

@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/mmmmmmmingor/minikv/core"
-	"github.com/mmmmmmmingor/minikv/core/entry"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,10 +18,10 @@ func getRandKey() []byte {
 }
 
 func TestKVSkipList(t *testing.T) {
-	kv := entry.NewKeyValue([]byte("key"), []byte("value"), entry.PUT, 3)
+	kv := core.NewKeyValue([]byte("key"), []byte("value"), core.PUT, 3)
 	bytes, _ := kv.ToBytes()
 
-	kv2 := entry.ParseFrom(bytes)
+	kv2 := core.ParseFrom1(bytes)
 	bytes2, _ := kv2.ToBytes()
 	assert.Equal(t, bytes, bytes2, "should be equal")
 
@@ -31,7 +30,7 @@ func TestKVSkipList(t *testing.T) {
 	assert.True(t, list.HasNode(&kv2) != nil, "")
 
 	for i := 0; i < 300; i++ {
-		kv := entry.NewKeyValue(getRandKey(), []byte("value"), entry.PUT, 3)
+		kv := core.NewKeyValue(getRandKey(), []byte("value"), core.PUT, 3)
 		list.AddNode(&kv)
 	}
 	core.PrintSkipList(list)
