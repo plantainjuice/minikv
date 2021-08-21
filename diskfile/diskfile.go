@@ -42,7 +42,9 @@ func (df *DiskFile) Open(filename string) {
 	stat, err := file.Stat()
 	df.fileSize = uint64(stat.Size())
 
-	if df.fileSize < TRAILER_SIZE {
+	if err != nil {
+		log.Fatalln("oepn stat err")
+	} else if df.fileSize < TRAILER_SIZE {
 		log.Fatalln("filesize < TRAILER_SIZE")
 	}
 
@@ -89,7 +91,7 @@ func (df *DiskFile) Open(filename string) {
 
 	buffer = make([]byte, df.blockIndexSize)
 	offset = int64(df.blockIndexOffset)
-	df.in.ReadAt(buffer, int64(df.blockIndexOffset))
+	df.in.ReadAt(buffer, offset)
 
 	haveRead := 0
 	for haveRead < len(buffer) {

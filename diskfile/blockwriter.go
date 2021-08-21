@@ -34,6 +34,16 @@ func NewBlockWriter() *BlockWriter {
 	}
 }
 
+func (bw *BlockWriter) GenerateBloomFilter()[]byte {
+
+	keys := make([][]byte,len(bw.kvBuf))
+	for i := range bw.kvBuf{
+		keys = append(keys,bw.kvBuf[i].GetKey())
+	}
+	return bw.bloomFilter.Generate(keys)
+}
+
+
 func (bw *BlockWriter) Append(kv *entry.KeyValue) {
 	bw.kvBuf = append(bw.kvBuf, kv)
 	bw.lastKV = kv

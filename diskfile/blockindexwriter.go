@@ -25,9 +25,9 @@ func (biw *BlockIndexWriter) serialize() []byte {
 	pos := 0
 	for _, meta := range biw.blockMetas {
 		metaBytes := meta.ToBytes()
-		pos += len(metaBytes)
-
+		//todo
 		copy(buffer[pos:pos+len(metaBytes)], metaBytes)
+		pos += len(metaBytes)
 	}
 	return buffer
 }

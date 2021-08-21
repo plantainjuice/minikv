@@ -45,7 +45,7 @@ func (dfw *DiskFileWriter) switchNextBlockWriter() {
 		log.Fatal("laskKV can not be nil")
 	}
 
-	bloomFilter := dfw.currentWriter.bloomFilter.Generate()
+	bloomFilter := dfw.currentWriter.GenerateBloomFilter()
 
 	buffer := dfw.currentWriter.Serialize()
 	dfw.indexWriter.append(*dfw.currentWriter.lastKV, dfw.currentOffset,

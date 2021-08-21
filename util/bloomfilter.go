@@ -29,7 +29,7 @@ func (bf *BloomFilter) Generate(keys [][]byte) []byte {
 		h := Hash(keys[i])
 		for t := 0; t < bf.K; t++ {
 			idx := (h%bf.bitLen + bf.bitLen) % bf.bitLen // 获取索引位
-			bf.result[idx/8] |= 1 << (idx % 8)           // why?
+			bf.result[idx/8] |= 1 << (idx % 8)           
 			delta := (h >> 17) | (h << 15)
 			h += delta
 		}
