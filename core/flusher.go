@@ -21,6 +21,7 @@ func (f Flusher) Flush(it *SkipList) {
 
 	writer := NewDiskFileWriter(fileName)
 
+	//
 	for i := range  it.Iterator() {
 		writer.Append(i)
 	}
