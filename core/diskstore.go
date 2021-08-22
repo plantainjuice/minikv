@@ -10,7 +10,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-
 )
 
 const (
@@ -26,8 +25,8 @@ type DiskStore struct {
 	updateLock   *sync.Mutex
 }
 
-func NewDiskStore(dataDir string, maxDiskFiles int) DiskStore {
-	return DiskStore{
+func NewDiskStore(dataDir string, maxDiskFiles int) *DiskStore {
+	return &DiskStore{
 		dataDir:      dataDir,
 		diskFiles:    make([]*DiskFile, 0),
 		maxDiskFiles: maxDiskFiles,
@@ -111,4 +110,8 @@ func (ds DiskStore) Close() {
 			log.Fatal(err)
 		}
 	}
+}
+
+func (ds DiskStore) CreateIterator() {
+	// TODO
 }
