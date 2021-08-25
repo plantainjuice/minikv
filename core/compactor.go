@@ -12,10 +12,21 @@ func NewCompactor(ds *DiskStore) *Compactor {
 	}
 }
 
-func (c *Compactor) PerformCompact() {
-	// TODO
+func (c *Compactor) performCompact(filesToCompact []*DiskFile) {
+	fileName := c.diskStore.GetNextDiskFileName()
+	fileTmpName := fileName + FILE_NAME_TMP_SUFFIX
+
+	{
+		writer := NewDiskFileWriter(fileTmpName)
+		// TODO
+		c.diskStore.CreateIterator()
+
+		writer.Close()
+	}
 }
 
 func (c *Compactor) Compact() {
-	// TODO
+	filesToCompact := make([]*DiskFile, 0)
+	filesToCompact = append(filesToCompact, c.diskStore.diskFiles...)
+	c.performCompact(filesToCompact)
 }

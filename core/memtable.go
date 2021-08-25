@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
-
 )
 
 type MemStore struct {
@@ -30,8 +29,10 @@ func NewMemStore(config *Config, flusher *Flusher) *MemStore {
 func (m *MemStore) Add(kv *KeyValue) {
 	m.flushIfNeeded(true)
 	m.UpdateLock.RLock()
+
 	m.SkipList.AddNode(kv)
 	atomic.AddUint64(&m.DataSize, uint64(kv.GetSerializeSize()))
+
 	m.UpdateLock.RUnlock()
 	m.flushIfNeeded(false)
 }
@@ -58,14 +59,16 @@ func flusherTask(m *MemStore) {
 
 	success := false
 	for i := 0; i < m.Config.FlushMaxRetries; i++ {
-		//TODO here
-		// m.flusher.Flush(m.SkipList.)
+		m.flusher.Flush(m.SkipList)
 		success = true
 	}
 
 	if success {
-		// TODO MemStoreIter may get a NPE because we set null here ? should synchronize ?
 		m.Snapshot = nil
 		atomic.CompareAndSwapInt32(&m.IsSnapshotFlushing, m.IsSnapshotFlushing, 0)
 	}
+}
+
+func (m *MemStore) CreateIterator() {
+	// TODO
 }
