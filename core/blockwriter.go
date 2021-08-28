@@ -12,67 +12,65 @@ const (
 )
 
 type BlockWriter struct {
-	totalSize     int
-	kvBuf         []*KeyValue
-	bloomFilter   util.BloomFilter
-	crc           *crc32.Table
-	checkSum      uint32
-	lastKV        *KeyValue
-	keyValueCount int
+	TotalSize     int
+	KvBuf         []*KeyValue
+	BloomFilter   util.BloomFilter
+	Crc           *crc32.Table
+	CheckSum      uint32
+	LastKV        *KeyValue
+	KeyValueCount int
 }
 
 func NewBlockWriter() *BlockWriter {
 	return &BlockWriter{
-		totalSize:     0,
-		keyValueCount: 0,
-		kvBuf:         make([]*KeyValue, 0),
-		bloomFilter: *util.NewBloomFilter(
+		TotalSize:     0,
+		KeyValueCount: 0,
+		KvBuf:         make([]*KeyValue, 0),
+		BloomFilter: *util.NewBloomFilter(
 			BLOOM_FILTER_HASH_COUNT,
 			BLOOM_FILTER_BITS_PER_KEY),
-		crc: crc32.IEEETable,
+		Crc: crc32.IEEETable,
 	}
 }
 
-func (bw *BlockWriter) GenerateBloomFilter()[]byte {
-
-	keys := make([][]byte,len(bw.kvBuf))
-	for i := range bw.kvBuf{
-		keys = append(keys,bw.kvBuf[i].GetKey())
+func (bw *BlockWriter) GenerateBloomFilter() []byte {
+	keys := make([][]byte, len(bw.KvBuf))
+	for i := range bw.KvBuf {
+		keys = append(keys, bw.KvBuf[i].GetKey())
 	}
-	return bw.bloomFilter.Generate(keys)
+	return bw.BloomFilter.Generate(keys)
 }
-
 
 func (bw *BlockWriter) Append(kv *KeyValue) {
-	bw.kvBuf = append(bw.kvBuf, kv)
-	bw.lastKV = kv
+	bw.KvBuf = append(bw.KvBuf, kv)
+	bw.LastKV = kv
 
 	buf, _ := kv.ToBytes()
-	bw.checkSum = crc32.Checksum(buf, bw.crc)
+	bw.CheckSum = crc32.Checksum(buf, bw.Crc)
 
-	bw.totalSize += int(kv.GetSerializeSize())
-	bw.keyValueCount += 1
+	bw.TotalSize += int(kv.GetSerializeSize())
+	bw.KeyValueCount += 1
 }
 
 func (bw BlockWriter) Size() int {
-	return KV_SIZE_LEN + bw.totalSize + CHECKSUM_LEN
+	return KV_SIZE_LEN + bw.TotalSize + CHECKSUM_LEN
 }
 
 func (bw *BlockWriter) Serialize() []byte {
 	buffer := make([]byte, bw.Size())
 	pos := 0
 
-	kvSize := util.Int32ToBytes(int32(len(bw.kvBuf)))
+	kvSize := util.Int32ToBytes(int32(len(bw.KvBuf)))
 	copy(buffer[pos:pos+KV_SIZE_LEN], kvSize)
 	pos += KV_SIZE_LEN
 
-	for _, kv := range bw.kvBuf {
+	for _, kv := range bw.KvBuf {
 		buf, _ := kv.ToBytes()
 		copy(buffer[pos:pos+len(buf)], buf)
 		pos += len(buf)
 	}
 
-	copy(buffer[pos:pos+CHECKSUM_LEN], util.Uint32ToBytes(bw.checkSum))
+	copy(buffer[pos:pos+CHECKSUM_LEN], util.Uint32ToBytes(bw.CheckSum))
 
 	return buffer
 }

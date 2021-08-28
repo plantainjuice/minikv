@@ -11,27 +11,27 @@ const (
 )
 
 type BlockMeta struct {
-	lastKV      KeyValue
-	blockOffset uint64
-	blockSize   uint64
-	bloomfilter []byte
+	LastKV      KeyValue
+	BlockOffset uint64
+	BlockSize   uint64
+	Bloomfilter []byte
 }
 
 func NewBlockMeta(lastKv KeyValue, blockOffset, blockSize uint64, bloomfilter []byte) *BlockMeta {
 	return &BlockMeta{
-		lastKV:      lastKv,
-		blockOffset: blockOffset,
-		blockSize:   blockOffset,
-		bloomfilter: bloomfilter,
+		LastKV:      lastKv,
+		BlockOffset: blockOffset,
+		BlockSize:   blockOffset,
+		Bloomfilter: bloomfilter,
 	}
 }
 
-func CreateSeekDummy(lastKv  KeyValue) *BlockMeta {
+func CreateSeekDummy(lastKv KeyValue) *BlockMeta {
 	return NewBlockMeta(lastKv, 0, 0, []byte{})
 }
 
 func (bm BlockMeta) GetSerializeSize() int {
-	return int(bm.lastKV.GetSerializeSize()) + OFFSET_SIZE + SIZE_SIZE + BF_LEN_SIZE + len(bm.bloomfilter)
+	return int(bm.LastKV.GetSerializeSize()) + OFFSET_SIZE + SIZE_SIZE + BF_LEN_SIZE + len(bm.Bloomfilter)
 
 }
 
@@ -40,27 +40,27 @@ func (bm BlockMeta) ToBytes() []byte {
 	pos := 0
 
 	// key-value
-	buffer, _ := bm.lastKV.ToBytes()
+	buffer, _ := bm.LastKV.ToBytes()
 	copy(bytes[pos:pos+len(buffer)], buffer)
 	pos += len(buffer)
 
 	// block offset
-	buffer = util.Uint64ToBytes(bm.blockOffset)
+	buffer = util.Uint64ToBytes(bm.BlockOffset)
 	copy(bytes[pos:pos+len(buffer)], buffer)
 	pos += len(buffer)
 
 	// block size
-	buffer = util.Uint64ToBytes(bm.blockSize)
+	buffer = util.Uint64ToBytes(bm.BlockSize)
 	copy(bytes[pos:pos+len(buffer)], buffer)
 	pos += len(buffer)
 
 	// bloom filter len
-	buffer = util.Uint32ToBytes(uint32(len(bm.bloomfilter)))
+	buffer = util.Uint32ToBytes(uint32(len(bm.Bloomfilter)))
 	copy(bytes[pos:pos+len(buffer)], buffer)
 	pos += len(buffer)
 
 	// bloom filter
-	copy(bytes[pos:pos+len(bm.bloomfilter)], bm.bloomfilter)
+	copy(bytes[pos:pos+len(bm.Bloomfilter)], bm.Bloomfilter)
 
 	return bytes
 }

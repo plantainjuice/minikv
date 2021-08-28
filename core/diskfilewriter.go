@@ -40,14 +40,14 @@ func NewDiskFileWriter(fname string) *DiskFileWriter {
 }
 
 func (dfw *DiskFileWriter) switchNextBlockWriter() {
-	if dfw.currentWriter.lastKV == nil {
+	if dfw.currentWriter.LastKV == nil {
 		log.Fatal("laskKV can not be nil")
 	}
 
 	bloomFilter := dfw.currentWriter.GenerateBloomFilter()
 
 	buffer := dfw.currentWriter.Serialize()
-	dfw.indexWriter.append(*dfw.currentWriter.lastKV, dfw.currentOffset,
+	dfw.indexWriter.append(*dfw.currentWriter.LastKV, dfw.currentOffset,
 		uint64(len(buffer)), bloomFilter)
 
 	dfw.currentOffset += uint64(len(buffer))
@@ -61,7 +61,7 @@ func (dfw *DiskFileWriter) Append(kv *KeyValue) {
 		log.Fatal("DiskFileWriter Append")
 	}
 
-	if (dfw.currentWriter.keyValueCount > 0) &&
+	if (dfw.currentWriter.KeyValueCount > 0) &&
 		(kv.GetSerializeSize()+uint32(dfw.currentWriter.Size()) > BLOCK_SIZE_UP_LIMIT) {
 		dfw.switchNextBlockWriter()
 	}
@@ -70,7 +70,7 @@ func (dfw *DiskFileWriter) Append(kv *KeyValue) {
 }
 
 func (dfw *DiskFileWriter) AppendIndex() {
-	if dfw.currentWriter.keyValueCount > 0 {
+	if dfw.currentWriter.KeyValueCount > 0 {
 		dfw.switchNextBlockWriter()
 	}
 
