@@ -61,6 +61,10 @@ func (kv KeyValue) GetOp() Op {
 	return kv.op
 }
 
+func (kv KeyValue) SetOp(op Op)  {
+	kv.op = op
+}
+
 func (kv KeyValue) GetSequenceId() uint64 {
 	return kv.sequenceId
 }

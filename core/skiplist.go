@@ -47,14 +47,14 @@ func compare(a, b []byte) int {
 }
 
 // 从顶部开始找起， 相当于一棵树，从树的根节点找起
-func (list SkipList) HasNode(kv *KeyValue) *Node {
+func (list SkipList) HasNode(key []byte) *Node {
 	if list.Level >= 0 {
 		level := list.Level
 		node := list.HeadNodeArr[level].Next
 		for node != nil {
-			if compare(node.KV.GetKey(), kv.GetKey()) == 0 {
+			if compare(node.KV.GetKey(), key) == 0 {
 				return node
-			} else if compare(node.KV.GetKey(), kv.GetKey()) > 0 {
+			} else if compare(node.KV.GetKey(), key) > 0 {
 				// 如果节点的值大于传入的值，就应该返回上个节点并进入下一层
 				if node.Prev.Down == nil {
 					if level-1 >= 0 { // 初始化头部节点没有相互链接
@@ -66,7 +66,7 @@ func (list SkipList) HasNode(kv *KeyValue) *Node {
 					node = node.Prev.Down
 				}
 				level -= 1
-			} else if compare(node.KV.GetKey(), kv.GetKey()) < 0 {
+			} else if compare(node.KV.GetKey(), key) < 0 {
 				// 如果节点的值小于传入的值就进入下一个节点，如果下一个节点是 nil，说明本层已经查完了，进入下一层，且从下一层的头部开始
 				node = node.Next
 				if node == nil {
@@ -85,7 +85,7 @@ func (list SkipList) HasNode(kv *KeyValue) *Node {
 // 删除节点
 func (list *SkipList) DeleteNode(kv *KeyValue) {
 	//todo 如果顶层只有一个节点删除后会不会异常？
-	node := list.HasNode(kv)
+	node := list.HasNode(kv.GetKey())
 	if node == nil {
 		return
 	}
@@ -104,7 +104,11 @@ func (list *SkipList) DeleteNode(kv *KeyValue) {
 // 添加数据到跳表中
 func (list *SkipList) AddNode(kv *KeyValue) {
 	// 如果包含相同的数据，就返回，不用添加了
-	if list.HasNode(kv) != nil {
+	// TODO 要判断是不是删除的，如果是要更新数据
+	if node := list.HasNode(kv.GetKey()); node != nil {
+		if(kv.GetOp() == DELETE){
+			node.KV.SetOp(DELETE)
+		}
 		return
 	}
 	headNodeInsertPositionArr := make([]*Node, list.MaxLevel)

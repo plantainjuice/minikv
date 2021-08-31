@@ -52,8 +52,7 @@ func (mkv *MiniKv) Delete(key, value []byte) {
 }
 
 func (mkv MiniKv) Get(key []byte) *KeyValue {
-	// TODO
-	return nil
+	return mkv.memStore.Get(key)
 }
 
 func (mkv MiniKv) Scan(start, stop []byte) {

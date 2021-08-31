@@ -69,6 +69,21 @@ func flusherTask(m *MemStore) {
 	}
 }
 
-func (m *MemStore) CreateIterator() {
-	// TODO
+func (m *MemStore) Get(key [] byte) *KeyValue{
+	m.UpdateLock.RLock() 
+	defer m.UpdateLock.Unlock()
+	return m.SkipList.HasNode(key).KV
+}
+
+func (m *MemStore) CreateIterator() <-chan *KeyValue {
+	m.UpdateLock.RLock() 
+	c := make(chan *KeyValue)
+	go func() {
+		for i := range m.SkipList.Iterator() {
+			c <- i
+		}
+		close(c)
+		m.UpdateLock.Unlock()
+	}()
+	return c
 }

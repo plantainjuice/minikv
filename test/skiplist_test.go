@@ -27,7 +27,7 @@ func TestKVSkipList(t *testing.T) {
 
 	list := core.NewSkipList()
 	list.AddNode(&kv)
-	assert.True(t, list.HasNode(&kv2) != nil, "")
+	assert.True(t, list.HasNode(kv2.GetKey()) != nil, "")
 
 	for i := 0; i < 300; i++ {
 		kv := core.NewKeyValue(getRandKey(), []byte("value"), core.PUT, 3)
