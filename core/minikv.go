@@ -46,13 +46,17 @@ func (mkv *MiniKv) Put(key, value []byte) {
 	mkv.memStore.Add(&kv)
 }
 
-func (mkv *MiniKv) Delete(key, value []byte) {
-	kv := NewKeyValue(key, value, DELETE, atomic.AddUint64(&mkv.sequenceId, 1))
+func (mkv *MiniKv) Delete(key []byte) {
+	kv := NewKeyValue(key, []byte{}, DELETE, atomic.AddUint64(&mkv.sequenceId, 1))
 	mkv.memStore.Add(&kv)
 }
 
 func (mkv MiniKv) Get(key []byte) *KeyValue {
 	return mkv.memStore.Get(key)
+}
+
+func (mkv MiniKv) Scan0() {
+	// TODO
 }
 
 func (mkv MiniKv) Scan(start, stop []byte) {
