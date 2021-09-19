@@ -108,6 +108,7 @@ func (ds *DiskStore) Open() {
 	}
 	files := ds.listDiskFiles()
 	for _, f := range files {
+		// 没有懒加加载， 一初始化就全部加载到内存了，内存会爆掉
 		df := NewDiskFile(f.Name())
 		ds.diskFiles = append(ds.diskFiles, df)
 	}
