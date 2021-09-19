@@ -3,6 +3,7 @@ package util
 import (
 	"encoding/binary"
 	"os"
+	"path/filepath"
 )
 
 func Hash(key []byte) int {
@@ -79,4 +80,23 @@ func IsDir(path string) bool {
 // 判断所给路径是否为文件
 func IsFile(path string) bool {
 	return !IsDir(path)
+}
+
+func RemoveContents(dir string) error {
+	d, err := os.Open(dir)
+	if err != nil {
+		return err
+	}
+	defer d.Close()
+	names, err := d.Readdirnames(-1)
+	if err != nil {
+		return err
+	}
+	for _, name := range names {
+		err = os.RemoveAll(filepath.Join(dir, name))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

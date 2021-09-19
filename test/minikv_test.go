@@ -6,12 +6,14 @@ import (
 
 	"github.com/mmmmmmmingor/minikv/core"
 	"github.com/mmmmmmmingor/minikv/util"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func worker(wg sync.WaitGroup, db *core.MiniKv, start, end int32) {
+	logrus.Debug(start, " ", end)
+	wg.Done()
 	for i := start; i < end; i++ {
-		wg.Done()
 		db.Put(util.Int32ToBytes(i), util.Int32ToBytes(i))
 	}
 }
@@ -25,7 +27,7 @@ func TestPut(t *testing.T) {
 	}
 
 	db := core.NewMiniKv(conf)
-	
+
 	db.Open()
 
 	var wg sync.WaitGroup
@@ -42,6 +44,7 @@ func TestPut(t *testing.T) {
 	}
 
 	wg.Wait()
+	println("success")
 
 	// TODO
 	// kv = db.Scan()

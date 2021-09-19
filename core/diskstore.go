@@ -51,7 +51,7 @@ func (ds DiskStore) listDiskFiles() []os.FileInfo {
 	for _, f := range files {
 		matched := regex.Match([]byte(f.Name()))
 		if matched {
-			filesList = append(filesList, f)
+			filesList = append(filesList,  f)
 		}
 	}
 
@@ -101,9 +101,10 @@ func (ds *DiskStore) Open() {
 	if !util.Exists(ds.dataDir) {
 		err := os.Mkdir(ds.dataDir, os.ModePerm)
 		if err != nil {
-			fmt.Println(err)
 			panic("create data dir error")
 		}
+	}else {
+		util.RemoveContents(ds.dataDir) // 暂时先删除之前的数据， 不做读取操作，实现增加功能
 	}
 	files := ds.listDiskFiles()
 	for _, f := range files {
@@ -122,6 +123,13 @@ func (ds DiskStore) Close() {
 	}
 }
 
-func (ds DiskStore) CreateIterator() {
-	// TODO
+func (ds DiskStore) CreateIterator() <-chan *KeyValue {
+	c := make(chan *KeyValue)
+	for _, df := range ds.diskFiles {
+		for  kv := range df.CreateItertator() {
+			c <- kv
+			close(c)
+		}
+	}
+	return c
 }

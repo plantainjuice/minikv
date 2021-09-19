@@ -61,7 +61,7 @@ func flusherTask(m *MemStore) {
 
 	success := false
 	for i := 0; i < m.Config.FlushMaxRetries; i++ {
-		if m.flusher.Flush(m.SkipList) != nil{
+		if m.flusher.Flush(m.Snapshot) != nil{
 			success = true
 			break
 		}
@@ -87,7 +87,7 @@ func (m *MemStore) CreateIterator() <-chan *KeyValue {
 			c <- i
 		}
 		close(c)
-		m.UpdateLock.Unlock()
+		m.UpdateLock.RUnlock()
 	}()
 	return c
 }

@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/mmmmmmmingor/minikv/util"
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -15,6 +17,8 @@ const (
 	DISK_FILE_MAGIC           uint64 = 18070835493257478057 // 0xFAC881234221FFA9L
 )
 
+type Void struct{}
+
 type DiskFile struct {
 	fname            string
 	in               *os.File
@@ -22,16 +26,46 @@ type DiskFile struct {
 	blockCount       uint32
 	blockIndexOffset uint64
 	blockIndexSize   uint64
+	blockMetaSet     map[*BlockMeta]Void
 }
 
 func NewDiskFile(filename string) *DiskFile {
-	df := &DiskFile{}
+	df := &DiskFile{
+		blockMetaSet: make(map[*BlockMeta]Void), // map 也要初始化
+	}
 	df.Open(filename)
 	return df
 }
 
+func (df *DiskFile) CreateItertator() <-chan *KeyValue {
+	c := make(chan *KeyValue)
+	go func() {
+		// 分别把每一个 blockMeta 的每一个 kv 迭代一遍
+		for blockMeta := range df.blockMetaSet {
+			blockReader := df.load(blockMeta)
+			for _, kv := range blockReader.KvBuf {
+				c <- kv
+			}
+		}
+		close(c)
+	}()
+	return c
+}
+
+func (df *DiskFile) load(meta *BlockMeta) (blockReader *BlockReader) {
+
+	buffer := make([]byte, meta.BlockSize)
+	length, err := df.in.ReadAt(buffer, int64(meta.BlockOffset))
+	if err != nil || length != len(buffer) {
+		logrus.Error("read from file error")
+		panic(err)
+	}
+	return BlockReaderParseFrom(buffer, 0, length)
+}
+
 func (df *DiskFile) Open(filename string) {
 	df.fname = filename
+	logrus.Info("open file: ", filename)
 
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
@@ -94,9 +128,17 @@ func (df *DiskFile) Open(filename string) {
 	df.in.ReadAt(buffer, offset)
 
 	haveRead := 0
-	for haveRead < len(buffer) {
+	for true {
 		meta := ParseFrom(buffer)
+		var void Void
+		df.blockMetaSet[meta] = void
 		haveRead += meta.GetSerializeSize()
+		// 解析出错也许会死循环
+		if haveRead >= len(buffer) {
+			break
+		}
+		//要这个之后的,每次都把开头的解析掉, 这里不用加一开始字段
+		buffer = buffer[meta.GetSerializeSize():]
 	}
 }
 
