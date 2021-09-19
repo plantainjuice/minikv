@@ -43,6 +43,7 @@ func NewSkipList(MaxLevel ...int) *SkipList {
 }
 
 func compare(a, b []byte) int {
+	// todo 优化
 	return strings.Compare(string(a), string(b))
 }
 

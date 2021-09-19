@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"log"
 	"os"
 )
@@ -15,7 +16,7 @@ func NewFlusher(diskStore *DiskStore) *Flusher {
 	}
 }
 
-func (f Flusher) Flush(it *SkipList) {
+func (f Flusher) Flush(it *SkipList) error {
 	fileName := f.diskStore.GetNextDiskFileName()
 	fileTmpName := fileName + FILE_NAME_TMP_SUFFIX
 
@@ -30,9 +31,11 @@ func (f Flusher) Flush(it *SkipList) {
 	if os.Rename(fileTmpName, fileName) != nil {
 		log.Fatal("Rename " + fileTmpName + " to " +
 			fileName + " failed when flushing")
+		return errors.New("flush error")
 	}
 
 	f.diskStore.AddDiskFile1(fileName)
 
 	os.Remove(fileTmpName)
+	return nil
 }

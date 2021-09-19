@@ -39,6 +39,7 @@ func (m *MemStore) Add(kv *KeyValue) {
 
 func (m *MemStore) flushIfNeeded(shouldBlocking bool) error {
 	if m.DataSize > uint64(m.Config.MaxMemstoreSize) {
+		//todo 万一请求太多这里直接报错吗？
 		if m.IsSnapshotFlushing == 1 && shouldBlocking {
 			return fmt.Errorf(`memstore is full, currentDataSize= %d B, maxMemstoreSize= %d B,	
 					 please wait until the flushing is finished`, m.DataSize, m.Config.MaxMemstoreSize)
@@ -59,8 +60,10 @@ func flusherTask(m *MemStore) {
 
 	success := false
 	for i := 0; i < m.Config.FlushMaxRetries; i++ {
-		m.flusher.Flush(m.SkipList)
-		success = true
+		if m.flusher.Flush(m.SkipList) != nil{
+			success = true
+			break
+		}
 	}
 
 	if success {
@@ -69,14 +72,14 @@ func flusherTask(m *MemStore) {
 	}
 }
 
-func (m *MemStore) Get(key [] byte) *KeyValue{
-	m.UpdateLock.RLock() 
+func (m *MemStore) Get(key []byte) *KeyValue {
+	m.UpdateLock.RLock()
 	defer m.UpdateLock.Unlock()
 	return m.SkipList.HasNode(key).KV
 }
 
 func (m *MemStore) CreateIterator() <-chan *KeyValue {
-	m.UpdateLock.RLock() 
+	m.UpdateLock.RLock()
 	c := make(chan *KeyValue)
 	go func() {
 		for i := range m.SkipList.Iterator() {
