@@ -32,6 +32,7 @@ func NewDiskStore(dataDir string, maxDiskFiles int) *DiskStore {
 		dataDir:      dataDir,
 		diskFiles:    make([]*DiskFile, 0),
 		maxDiskFiles: maxDiskFiles,
+		updateLock: &sync.Mutex{},
 	}
 }
 
@@ -89,7 +90,7 @@ func (ds *DiskStore) AddDiskFile1(fileName string) {
 }
 
 func (ds DiskStore) GetNextDiskFileName() string {
-	f, err := os.Create(fmt.Sprintf("data.%020d", ds.NextDiskFileId()))
+	f, err := os.Create(fmt.Sprintf(ds.dataDir + "/data.%020d", ds.NextDiskFileId()))
 	if err != nil {
 		log.Fatal(err)
 	}

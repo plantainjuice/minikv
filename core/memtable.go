@@ -29,12 +29,12 @@ func NewMemStore(config *Config, flusher *Flusher) *MemStore {
 
 func (m *MemStore) Add(kv *KeyValue) {
 	m.flushIfNeeded(true)
-	m.UpdateLock.RLock()
+	m.UpdateLock.Lock()
 
 	m.SkipList.AddNode(kv)
 	atomic.AddUint64(&m.DataSize, uint64(kv.GetSerializeSize()))
 
-	m.UpdateLock.RUnlock()
+	m.UpdateLock.Unlock()
 	m.flushIfNeeded(false)
 }
 

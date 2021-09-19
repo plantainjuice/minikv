@@ -33,8 +33,8 @@ func TestPut(t *testing.T) {
 	var routineNum int32 = 5
 
 	var i int32 = 0
+	wg.Add(int(routineNum))
 	for ; i < routineNum; i++ {
-		wg.Add(1)
 
 		size := totalKVSize / routineNum
 
