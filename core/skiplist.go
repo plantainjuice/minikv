@@ -31,7 +31,7 @@ type SkipList struct {
 func NewSkipList(MaxLevel ...int) *SkipList {
 	// leveldb 使用 12
 	maxLevel := 12
-	if len(MaxLevel) != 0 {
+	if len(MaxLevel) != 0 && MaxLevel[0] > 0{
 		maxLevel = MaxLevel[0]
 	}
 	list := new(SkipList)

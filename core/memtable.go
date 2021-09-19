@@ -23,6 +23,7 @@ func NewMemStore(config *Config, flusher *Flusher) *MemStore {
 	memStore.Config = config
 	memStore.SkipList = NewSkipList(config.LevelDBMaxHeight)
 	memStore.flusher = flusher
+	memStore.UpdateLock = &sync.RWMutex{}
 	return memStore
 }
 

@@ -25,6 +25,8 @@ func TestPut(t *testing.T) {
 	}
 
 	db := core.NewMiniKv(conf)
+	
+	db.Open()
 
 	var wg sync.WaitGroup
 	var totalKVSize int32 = 100
