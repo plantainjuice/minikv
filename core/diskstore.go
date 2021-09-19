@@ -10,6 +10,8 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+
+	"github.com/mmmmmmmingor/minikv/util"
 )
 
 const (
@@ -95,6 +97,13 @@ func (ds DiskStore) GetNextDiskFileName() string {
 }
 
 func (ds *DiskStore) Open() {
+	if !util.Exists(ds.dataDir) {
+		err := os.Mkdir(ds.dataDir, os.ModePerm)
+		if err != nil {
+			fmt.Println(err)
+			panic("create data dir error")
+		}
+	}
 	files := ds.listDiskFiles()
 	for _, f := range files {
 		df := NewDiskFile(f.Name())
