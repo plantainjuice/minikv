@@ -7,15 +7,15 @@ import (
 )
 
 type MemStore struct {
-	DataSize uint64
-	Config   *Config
-	flusher  *Flusher
+	DataSize           uint64
+	IsSnapshotFlushing int32
+	Config             *Config
+	flusher            *Flusher
 
 	SkipList *SkipList
 	Snapshot *SkipList
 
-	UpdateLock         *sync.RWMutex
-	IsSnapshotFlushing int32
+	UpdateLock *sync.RWMutex
 }
 
 func NewMemStore(config *Config, flusher *Flusher) *MemStore {

@@ -20,10 +20,11 @@ type DiskFileWriter struct {
 }
 
 func NewDiskFileWriter(fname string) *DiskFileWriter {
-	outFile, err := os.OpenFile(fname, os.O_RDWR, 0644)
+	outFile, err := os.Create(fname)
 
 	if err != nil {
 		log.Fatal(err)
+		return nil
 	}
 
 	return &DiskFileWriter{
@@ -111,6 +112,7 @@ func (dfw *DiskFileWriter) AppendTrailer() {
 }
 
 func (dfw *DiskFileWriter) Close() {
+	log.Println(dfw.fileSize)
 	if dfw.out != nil {
 		dfw.out.Sync()
 		dfw.out.Close()

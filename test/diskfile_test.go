@@ -66,7 +66,7 @@ func TestDiskFile(t *testing.T) {
 	diskFileWriter.AppendTrailer()
 
 	diskFile := core.NewDiskFile(dbFile)
-	diskFile.Close()
+	defer diskFile.Close()
 }
 
 func TestDiskFileIO(t *testing.T) {

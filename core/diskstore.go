@@ -20,10 +20,10 @@ const (
 )
 
 type DiskStore struct {
+	maxFileId    int64
 	dataDir      string
 	diskFiles    []*DiskFile
 	maxDiskFiles int
-	maxFileId    int64
 	updateLock   *sync.Mutex
 }
 
@@ -32,7 +32,7 @@ func NewDiskStore(dataDir string, maxDiskFiles int) *DiskStore {
 		dataDir:      dataDir,
 		diskFiles:    make([]*DiskFile, 0),
 		maxDiskFiles: maxDiskFiles,
-		updateLock: &sync.Mutex{},
+		updateLock:   &sync.Mutex{},
 	}
 }
 
@@ -51,7 +51,7 @@ func (ds DiskStore) listDiskFiles() []os.FileInfo {
 	for _, f := range files {
 		matched := regex.Match([]byte(f.Name()))
 		if matched {
-			filesList = append(filesList,  f)
+			filesList = append(filesList, f)
 		}
 	}
 
@@ -85,16 +85,19 @@ func (ds *DiskStore) AddDiskFile(df *DiskFile) {
 }
 
 func (ds *DiskStore) AddDiskFile1(fileName string) {
+	ds.updateLock.Lock()
+	defer ds.updateLock.Unlock()
 	df := NewDiskFile(fileName)
 	ds.diskFiles = append(ds.diskFiles, df)
 }
 
 func (ds DiskStore) GetNextDiskFileName() string {
-	f, err := os.Create(fmt.Sprintf(ds.dataDir + "/data.%020d", ds.NextDiskFileId()))
-	if err != nil {
-		log.Fatal(err)
-	}
-	return f.Name()
+	fname := fmt.Sprintf(ds.dataDir+"/data.%020d", ds.NextDiskFileId())
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// log.Println(f.Name())
+	return fname
 }
 
 func (ds *DiskStore) Open() {
@@ -103,7 +106,7 @@ func (ds *DiskStore) Open() {
 		if err != nil {
 			panic("create data dir error")
 		}
-	}else {
+	} else {
 		util.RemoveContents(ds.dataDir) // 暂时先删除之前的数据， 不做读取操作，实现增加功能
 	}
 	files := ds.listDiskFiles()
@@ -127,7 +130,7 @@ func (ds DiskStore) Close() {
 func (ds DiskStore) CreateIterator() <-chan *KeyValue {
 	c := make(chan *KeyValue)
 	for _, df := range ds.diskFiles {
-		for  kv := range df.CreateItertator() {
+		for kv := range df.CreateItertator() {
 			c <- kv
 			close(c)
 		}

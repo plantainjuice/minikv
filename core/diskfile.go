@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/mmmmmmmingor/minikv/util"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -56,15 +55,14 @@ func (df *DiskFile) load(meta *BlockMeta) (blockReader *BlockReader) {
 	buffer := make([]byte, meta.BlockSize)
 	length, err := df.in.ReadAt(buffer, int64(meta.BlockOffset))
 	if err != nil || length != len(buffer) {
-		logrus.Error("read from file error")
-		panic(err)
+		log.Fatal("read from file error", err.Error())
 	}
 	return BlockReaderParseFrom(buffer, 0, length)
 }
 
 func (df *DiskFile) Open(filename string) {
 	df.fname = filename
-	logrus.Info("open file: ", filename)
+	log.Println("open file: ", filename)
 
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
@@ -86,7 +84,7 @@ func (df *DiskFile) Open(filename string) {
 	buffer := make([]byte, 8)
 	_, err = df.in.ReadAt(buffer, offset)
 	if err != nil || df.fileSize != util.BytesToUint64(buffer) {
-		log.Fatalln("read filesize error")
+		log.Fatalln("read filesize error", df.fileSize, util.BytesToUint64(buffer))
 	}
 
 	offset += 8

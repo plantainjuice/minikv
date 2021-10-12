@@ -218,7 +218,7 @@ func randLevel() bool {
 
 // 不提供线程安全， 如果改变了将error
 func (list *SkipList) Iterator() <-chan *KeyValue {
-	c := make(chan *KeyValue, 10)
+	c := make(chan *KeyValue, 10) // buffer
 	go func() {
 		node := list.HeadNodeArr[0].Next
 		for node != nil {
