@@ -6,7 +6,6 @@ import (
 
 	"github.com/mmmmmmmingor/minikv/util"
 	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -128,7 +127,7 @@ func (df *DiskFile) Open(filename string) {
 	df.in.ReadAt(buffer, offset)
 
 	haveRead := 0
-	for true {
+	for {
 		meta := ParseFrom(buffer)
 		var void Void
 		df.blockMetaSet[meta] = void

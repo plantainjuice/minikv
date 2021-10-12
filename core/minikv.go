@@ -6,10 +6,10 @@ import (
 )
 
 type MiniKv struct {
+	sequenceId uint64
 	memStore   *MemStore
 	diskStore  *DiskStore
 	compactor  *Compactor
-	sequenceId uint64
 	config     *Config
 }
 

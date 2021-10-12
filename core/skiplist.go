@@ -16,9 +16,9 @@ import (
 
 type Node struct {
 	KV   *KeyValue // 存储任何类型
-	Prev *Node           // 同层前节点
-	Next *Node           // 同层后节点
-	Down *Node           // 下层同节点
+	Prev *Node     // 同层前节点
+	Next *Node     // 同层后节点
+	Down *Node     // 下层同节点
 }
 
 type SkipList struct {
@@ -31,7 +31,7 @@ type SkipList struct {
 func NewSkipList(MaxLevel ...int) *SkipList {
 	// leveldb 使用 12
 	maxLevel := 12
-	if len(MaxLevel) != 0 && MaxLevel[0] > 0{
+	if len(MaxLevel) != 0 && MaxLevel[0] > 0 {
 		maxLevel = MaxLevel[0]
 	}
 	list := new(SkipList)
@@ -107,7 +107,7 @@ func (list *SkipList) AddNode(kv *KeyValue) {
 	// 如果包含相同的数据，就返回，不用添加了
 	// TODO 要判断是不是删除的，如果是要更新数据
 	if node := list.HasNode(kv.GetKey()); node != nil {
-		if(kv.GetOp() == DELETE){
+		if kv.GetOp() == DELETE {
 			node.KV.SetOp(DELETE)
 		}
 		return
@@ -218,7 +218,7 @@ func randLevel() bool {
 
 // 不提供线程安全， 如果改变了将error
 func (list *SkipList) Iterator() <-chan *KeyValue {
-	c := make(chan *KeyValue)
+	c := make(chan *KeyValue, 10)
 	go func() {
 		node := list.HeadNodeArr[0].Next
 		for node != nil {

@@ -61,7 +61,7 @@ func flusherTask(m *MemStore) {
 
 	success := false
 	for i := 0; i < m.Config.FlushMaxRetries; i++ {
-		if m.flusher.Flush(m.Snapshot) != nil{
+		if m.flusher.Flush(m.Snapshot) != nil {
 			success = true
 			break
 		}

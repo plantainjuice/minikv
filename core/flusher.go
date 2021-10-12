@@ -28,9 +28,10 @@ func (f Flusher) Flush(it *SkipList) error {
 	writer.AppendIndex()
 	writer.AppendTrailer()
 
-	if os.Rename(fileTmpName, fileName) != nil {
-		log.Fatal("Rename " + fileTmpName + " to " +
-			fileName + " failed when flushing")
+	err := os.Rename(fileTmpName, fileName)
+
+	if err != nil {
+		log.Fatal(err)
 		return errors.New("flush error")
 	}
 

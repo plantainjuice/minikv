@@ -6,16 +6,15 @@ import (
 
 	"github.com/mmmmmmmingor/minikv/core"
 	"github.com/mmmmmmmingor/minikv/util"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func worker(wg sync.WaitGroup, db *core.MiniKv, start, end int32) {
-	logrus.Debug(start, " ", end)
-	wg.Done()
+	println("start:", start, "end:", end)
 	for i := start; i < end; i++ {
 		db.Put(util.Int32ToBytes(i), util.Int32ToBytes(i))
 	}
+	wg.Done()
 }
 
 func TestPut(t *testing.T) {
