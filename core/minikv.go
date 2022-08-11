@@ -34,25 +34,31 @@ func (mkv *MiniKv) Open() *MiniKv {
 
 	mkv.compactor = NewCompactor(mkv.diskStore)
 
+	go mkv.compactor.Compact()
+
 	return mkv
 }
 
 func (mkv MiniKv) Close() {
+	mkv.memStore.Close()
 	mkv.diskStore.Close()
+	mkv.compactor.StopRunning()
 }
 
-func (mkv *MiniKv) Put(key, value []byte) {
+func (mkv *MiniKv) Put(key, value []byte) error {
 	kv := NewKeyValue(key, value, PUT, atomic.AddUint64(&mkv.sequenceId, 1))
-	mkv.memStore.Add(&kv)
+	return mkv.memStore.Add(&kv)
 }
 
-func (mkv *MiniKv) Delete(key []byte) {
+func (mkv *MiniKv) Delete(key []byte) error {
 	kv := NewKeyValue(key, []byte{}, DELETE, atomic.AddUint64(&mkv.sequenceId, 1))
-	mkv.memStore.Add(&kv)
+	return mkv.memStore.Add(&kv)
 }
 
 func (mkv MiniKv) Get(key []byte) *KeyValue {
-	return mkv.memStore.Get(key)
+	// mkv.Scan(key, []byte{})
+
+	return nil
 }
 
 func (mkv MiniKv) Scan0() {

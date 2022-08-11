@@ -103,14 +103,14 @@ func (list *SkipList) DeleteNode(kv *KeyValue) {
 }
 
 // 添加数据到跳表中
-func (list *SkipList) AddNode(kv *KeyValue) {
+func (list *SkipList) AddNode(kv *KeyValue) *KeyValue {
 	// 如果包含相同的数据，就返回，不用添加了
 	// TODO 要判断是不是删除的，如果是要更新数据
 	if node := list.HasNode(kv.GetKey()); node != nil {
 		if kv.GetOp() == DELETE {
 			node.KV.SetOp(DELETE)
 		}
-		return
+		return node.KV
 	}
 	headNodeInsertPositionArr := make([]*Node, list.MaxLevel)
 
@@ -150,6 +150,8 @@ func (list *SkipList) AddNode(kv *KeyValue) {
 	}
 
 	list.InsertValue(kv, headNodeInsertPositionArr)
+
+	return nil
 }
 
 func (list *SkipList) InsertValue(kv *KeyValue, headNodeInsertPositionArr []*Node) {

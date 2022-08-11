@@ -106,9 +106,8 @@ func (ds *DiskStore) Open() {
 		if err != nil {
 			panic("create data dir error")
 		}
-	} else {
-		util.RemoveContents(ds.dataDir) // 暂时先删除之前的数据， 不做读取操作，实现增加功能
 	}
+
 	files := ds.listDiskFiles()
 	for _, f := range files {
 		// 没有懒加加载， 一初始化就全部加载到内存了，内存会爆掉
@@ -128,12 +127,16 @@ func (ds DiskStore) Close() {
 }
 
 func (ds DiskStore) CreateIterator() <-chan *KeyValue {
+	return ds.CreateIterator1(ds.diskFiles)
+}
+
+func (ds DiskStore) CreateIterator1(diskFiles []*DiskFile) <-chan *KeyValue {
 	c := make(chan *KeyValue)
-	for _, df := range ds.diskFiles {
+	for _, df := range diskFiles {
 		for kv := range df.CreateItertator() {
 			c <- kv
-			close(c)
 		}
 	}
+	close(c)
 	return c
 }

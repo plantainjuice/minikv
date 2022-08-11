@@ -7,7 +7,7 @@ type Config struct {
 	MaxDiskFiles      int
 	MaxThreadPoolSize int
 
-	LevelDBMaxHeight int
+	SkipListMaxHeight int
 }
 
 var DefaultConfig = Config{
@@ -16,5 +16,5 @@ var DefaultConfig = Config{
 	DataDir:           "minikv",
 	MaxDiskFiles:      10,
 	MaxThreadPoolSize: 5,
-	LevelDBMaxHeight:  12,
+	SkipListMaxHeight: 12,
 }

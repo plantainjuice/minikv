@@ -3,10 +3,12 @@ package core
 import (
 	"log"
 	"os"
+	"sync"
 )
 
 type Flusher struct {
 	diskStore *DiskStore
+	wg        sync.WaitGroup
 }
 
 func NewFlusher(diskStore *DiskStore) *Flusher {
@@ -16,13 +18,18 @@ func NewFlusher(diskStore *DiskStore) *Flusher {
 }
 
 func (f Flusher) Flush(it *SkipList) error {
+	f.wg.Add(1)
+
+	defer f.wg.Done()
+
 	fileName := f.diskStore.GetNextDiskFileName()
 	fileTmpName := fileName + FILE_NAME_TMP_SUFFIX
 
 	writer := NewDiskFileWriter(fileTmpName)
+	defer os.Remove(fileTmpName)
 
 	for i := range it.Iterator() {
-		log.Println(i.key, i.value)
+		log.Println("Flush", i.key, i.value)
 		writer.Append(i)
 	}
 	writer.AppendIndex()
@@ -37,6 +44,9 @@ func (f Flusher) Flush(it *SkipList) error {
 
 	f.diskStore.AddDiskFile1(fileName)
 
-	os.Remove(fileTmpName)
 	return nil
+}
+
+func (f Flusher) Wait() {
+	f.wg.Wait()
 }

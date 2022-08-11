@@ -9,18 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func worker(wg sync.WaitGroup, db *core.MiniKv, start, end int32) {
-	println("start:", start, "end:", end)
-	for i := start; i < end; i++ {
-		db.Put(util.Int32ToBytes(i), util.Int32ToBytes(i))
-	}
-	wg.Done()
-}
-
 func TestPut(t *testing.T) {
 	conf := &core.Config{
 		DataDir:         "./minikv",
-		MaxMemstoreSize: 1,
+		MaxMemstoreSize: 2 * 1024 * 1024,
 		FlushMaxRetries: 1,
 		MaxDiskFiles:    10,
 	}
@@ -34,15 +26,24 @@ func TestPut(t *testing.T) {
 	var routineNum int32 = 5
 
 	var i int32 = 0
-	wg.Add(int(routineNum))
 	for ; i < routineNum; i++ {
+		wg.Add(1)
 
 		size := totalKVSize / routineNum
 
-		go worker(wg, db, i*size, (i+1)*size)
+		go func(db *core.MiniKv, start, end int32) {
+			defer wg.Done()
+			println("start:", start, "end:", end)
+			for i := start; i < end; i++ {
+				db.Put(util.Int32ToBytes(i), util.Int32ToBytes(i))
+			}
+		}(db, i*size, (i+1)*size-1)
 	}
 
 	wg.Wait()
+
+	db.Close()
+
 	println("success")
 
 	// TODO

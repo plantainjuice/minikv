@@ -21,21 +21,33 @@ type MemStore struct {
 func NewMemStore(config *Config, flusher *Flusher) *MemStore {
 	memStore := new(MemStore)
 	memStore.Config = config
-	memStore.SkipList = NewSkipList(config.LevelDBMaxHeight)
+	memStore.SkipList = NewSkipList(config.SkipListMaxHeight)
 	memStore.flusher = flusher
 	memStore.UpdateLock = &sync.RWMutex{}
 	return memStore
 }
 
-func (m *MemStore) Add(kv *KeyValue) {
-	m.flushIfNeeded(true)
+func (m *MemStore) Add(kv *KeyValue) error {
+	err := m.flushIfNeeded(true)
+	if err != nil {
+		return err
+	}
+
 	m.UpdateLock.Lock()
 
-	m.SkipList.AddNode(kv)
-	atomic.AddUint64(&m.DataSize, uint64(kv.GetSerializeSize()))
+	if oldKv := m.SkipList.AddNode(kv); oldKv != nil {
+		atomic.AddUint64(&m.DataSize, uint64(kv.GetSerializeSize()-oldKv.GetSerializeSize()))
+	} else {
+		atomic.AddUint64(&m.DataSize, uint64(kv.GetSerializeSize()))
+	}
 
 	m.UpdateLock.Unlock()
-	m.flushIfNeeded(false)
+	err = m.flushIfNeeded(false)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (m *MemStore) flushIfNeeded(shouldBlocking bool) error {
@@ -55,7 +67,7 @@ func flusherTask(m *MemStore) {
 	m.UpdateLock.Lock()
 	m.Snapshot = m.SkipList
 	// TODO MemStoreIter may find the kvMap changed ? should synchronize ?
-	m.SkipList = NewSkipList(m.Config.LevelDBMaxHeight)
+	m.SkipList = NewSkipList(m.Config.SkipListMaxHeight)
 	m.DataSize = 0
 	m.UpdateLock.Unlock()
 
@@ -77,6 +89,11 @@ func (m *MemStore) Get(key []byte) *KeyValue {
 	m.UpdateLock.RLock()
 	defer m.UpdateLock.Unlock()
 	return m.SkipList.HasNode(key).KV
+}
+
+func (m *MemStore) Close() {
+	flusherTask(m)
+	m.flusher.Wait()
 }
 
 func (m *MemStore) CreateIterator() <-chan *KeyValue {
