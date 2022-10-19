@@ -1,48 +1,24 @@
 package core
 
 import (
-	"log"
-	"os"
 	"sync"
 )
 
 type Flusher struct {
-	diskStore *DiskStore
-	wg        sync.WaitGroup
+	diskFile *DiskFile
+	wg       sync.WaitGroup
 }
 
-func NewFlusher(diskStore *DiskStore) *Flusher {
+func NewFlusher(diskFile *DiskFile) *Flusher {
 	return &Flusher{
-		diskStore: diskStore,
+		diskFile: diskFile,
 	}
 }
 
-func (f Flusher) Flush(it *SkipList) error {
+func (f Flusher) Flush() error {
 	f.wg.Add(1)
 
 	defer f.wg.Done()
-
-	fileName := f.diskStore.GetNextDiskFileName()
-	fileTmpName := fileName + FILE_NAME_TMP_SUFFIX
-
-	writer := NewDiskFileWriter(fileTmpName)
-	defer os.Remove(fileTmpName)
-
-	for i := range it.Iterator() {
-		log.Println("Flush", i.key, i.value)
-		writer.Append(i)
-	}
-	writer.AppendIndex()
-	writer.AppendTrailer()
-	writer.Close()
-
-	err := os.Rename(fileTmpName, fileName)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	f.diskStore.AddDiskFile1(fileName)
 
 	return nil
 }

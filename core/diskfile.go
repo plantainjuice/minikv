@@ -1,145 +1,80 @@
 package core
 
 import (
-	"log"
 	"os"
-
-	"github.com/mmmmmmmingor/minikv/util"
 )
 
 const (
-	BLOCK_SIZE_UP_LIMIT              = 1024 * 1024 * 2
-	BLOOM_FILTER_HASH_COUNT          = 3
-	BLOOM_FILTER_BITS_PER_KEY        = 10
-	TRAILER_SIZE                     = 8 + 4 + 8 + 8 + 8
-	DISK_FILE_MAGIC           uint64 = 18070835493257478057 // 0xFAC881234221FFA9L
+	FILE_NAME = "minikv.data"
 )
 
-type Void struct{}
-
 type DiskFile struct {
-	fname            string
-	in               *os.File
-	fileSize         uint64
-	blockCount       uint32
-	blockIndexOffset uint64
-	blockIndexSize   uint64
-	blockMetaSet     map[*BlockMeta]Void
+	file   *os.File
+	offset int64
 }
 
-func NewDiskFile(filename string) *DiskFile {
-	df := &DiskFile{
-		blockMetaSet: make(map[*BlockMeta]Void), // map 也要初始化
-	}
-	df.Open(filename)
-	return df
+func NewDiskFile(path string) (*DiskFile, error) {
+	fileName := path + string(os.PathSeparator) + FILE_NAME
+	return newDiskFile(fileName)
 }
 
-func (df *DiskFile) CreateItertator() <-chan *KeyValue {
-	c := make(chan *KeyValue)
-	go func() {
-		// 分别把每一个 blockMeta 的每一个 kv 迭代一遍
-		for blockMeta := range df.blockMetaSet {
-			blockReader := df.load(blockMeta)
-			for _, kv := range blockReader.KvBuf {
-				c <- kv
-			}
-		}
-		close(c)
-	}()
-	return c
-}
-
-func (df *DiskFile) load(meta *BlockMeta) (blockReader *BlockReader) {
-
-	buffer := make([]byte, meta.BlockSize)
-	length, err := df.in.ReadAt(buffer, int64(meta.BlockOffset))
-	if err != nil || length != len(buffer) {
-		log.Fatal("read from file error", err.Error())
-	}
-	return BlockReaderParseFrom(buffer, 0, length)
-}
-
-func (df *DiskFile) Open(filename string) {
-	df.fname = filename
-	log.Println("open file: ", filename)
-
+func newDiskFile(filename string) (*DiskFile, error) {
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
-		log.Fatalln("open file fail")
+		return nil, err
 	}
-	df.in = file
 
-	stat, err := file.Stat()
-	df.fileSize = uint64(stat.Size())
-
+	stat, err := os.Stat(filename)
 	if err != nil {
-		log.Fatalln("oepn stat err")
-	} else if df.fileSize < TRAILER_SIZE {
-		log.Fatalln("filesize < TRAILER_SIZE")
+		return nil, err
 	}
 
-	offset := int64(df.fileSize - TRAILER_SIZE)
+	return &DiskFile{
+		offset: stat.Size(),
+		file:   file,
+	}, nil
+}
 
-	buffer := make([]byte, 8)
-	_, err = df.in.ReadAt(buffer, offset)
-	if err != nil || df.fileSize != util.BytesToUint64(buffer) {
-		log.Fatalln("read filesize error", df.fileSize, util.BytesToUint64(buffer))
+func (df *DiskFile) Read(offset int64) (e *Entry, err error) {
+	buf := make([]byte, entryHeaderSize)
+	if _, err = df.file.ReadAt(buf, offset); err != nil {
+		return
+	}
+	if e, err = Decode(buf); err != nil {
+		return
 	}
 
-	offset += 8
-
-	buffer = make([]byte, 4)
-	_, err = df.in.ReadAt(buffer, offset)
-	if err != nil {
-		log.Fatalln("read blockCount error")
-	}
-	offset += 4
-	df.blockCount = util.BytesToUint32(buffer)
-
-	buffer = make([]byte, 8)
-	_, err = df.in.ReadAt(buffer, offset)
-	if err != nil {
-		log.Fatalln("read blockIndexOffset error")
-	}
-	offset += 8
-	df.blockIndexOffset = util.BytesToUint64(buffer)
-
-	buffer = make([]byte, 8)
-	_, err = df.in.ReadAt(buffer, offset)
-	if err != nil {
-		log.Fatalln("read blockIndexSize error")
-	}
-	offset += 8
-	df.blockIndexSize = util.BytesToUint64(buffer)
-
-	buffer = make([]byte, 8)
-	_, err = df.in.ReadAt(buffer, offset)
-	if err != nil || DISK_FILE_MAGIC != util.BytesToUint64(buffer) {
-		log.Fatalln("read Magic number error")
-	}
-	offset += 8
-
-	buffer = make([]byte, df.blockIndexSize)
-	offset = int64(df.blockIndexOffset)
-	df.in.ReadAt(buffer, offset)
-
-	haveRead := 0
-	for {
-		meta := ParseFrom(buffer)
-		var void Void
-		df.blockMetaSet[meta] = void
-		haveRead += meta.GetSerializeSize()
-		// 解析出错也许会死循环
-		if haveRead >= len(buffer) {
-			break
+	offset += entryHeaderSize
+	if e.KeySize > 0 {
+		key := make([]byte, e.KeySize)
+		if _, err = df.file.ReadAt(key, offset); err != nil {
+			return
 		}
-		//要这个之后的,每次都把开头的解析掉, 这里不用加一开始字段
-		buffer = buffer[meta.GetSerializeSize():]
+		e.Key = key
 	}
+
+	offset += int64(e.KeySize)
+	if e.ValueSize > 0 {
+		value := make([]byte, e.ValueSize)
+		if _, err = df.file.ReadAt(value, offset); err != nil {
+			return
+		}
+		e.Value = value
+	}
+	return
+}
+
+func (df *DiskFile) Write(e *Entry) (err error) {
+	enc, err := e.Encode()
+	if err != nil {
+		return err
+	}
+	_, err = df.file.WriteAt(enc, df.offset)
+	df.offset += e.GetSize()
+	return
 }
 
 func (df *DiskFile) Close() error {
-	err := df.in.Close()
+	err := df.file.Close()
 	return err
 }

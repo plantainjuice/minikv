@@ -1,64 +1,119 @@
 package core
 
 import (
+	"errors"
+	"io"
 	"log"
-	"sync/atomic"
+	"sync"
 )
 
 type MiniKv struct {
-	sequenceId uint64
-	memStore   *MemStore
-	diskStore  *DiskStore
-	compactor  *Compactor
-	config     *Config
+	indexes   map[string]int64
+	diskFile  *DiskFile
+	compactor *Compactor
+	config    *Config
+	flusher   *Flusher
+	mu        sync.RWMutex
 }
 
-func NewMiniKv(config *Config) *MiniKv {
-	return &MiniKv{
-		config: config,
-	}
-}
-
-func (mkv *MiniKv) Open() *MiniKv {
-	if mkv.config == nil {
+func Open(config *Config) (*MiniKv, error) {
+	if config == nil {
 		log.Fatal("config can not be none")
 	}
 
-	conf := mkv.config
-	mkv.diskStore = NewDiskStore(conf.DataDir, conf.MaxDiskFiles)
-	mkv.diskStore.Open()
+	diskFile, err := NewDiskFile(config.DataDir)
+	if err != nil {
+		return nil, err
+	}
 
-	mkv.sequenceId = 0
+	compactor := NewCompactor(diskFile)
 
-	mkv.memStore = NewMemStore(conf, NewFlusher(mkv.diskStore))
+	mkv := &MiniKv{
+		diskFile:  diskFile,
+		indexes:   make(map[string]int64),
+		compactor: compactor,
+		config:    config,
+	}
 
-	mkv.compactor = NewCompactor(mkv.diskStore)
+	mkv.loadIndexesFromFile()
 
-	go mkv.compactor.Compact()
+	go compactor.Compact()
 
-	return mkv
+	return mkv, nil
 }
 
 func (mkv MiniKv) Close() {
-	mkv.memStore.Close()
-	mkv.diskStore.Close()
+	mkv.diskFile.Close()
 	mkv.compactor.StopRunning()
 }
 
 func (mkv *MiniKv) Put(key, value []byte) error {
-	kv := NewKeyValue(key, value, PUT, atomic.AddUint64(&mkv.sequenceId, 1))
-	return mkv.memStore.Add(&kv)
+	if len(key) == 0 {
+		return errors.New("key can not be empty")
+	}
+
+	mkv.mu.Lock()
+	defer mkv.mu.Unlock()
+
+	offset := mkv.diskFile.offset
+
+	entry := NewEntry(key, value, PUT)
+
+	err := mkv.diskFile.Write(entry)
+	if err != nil {
+		return nil
+	}
+
+	mkv.indexes[string(key)] = offset
+
+	return nil
 }
 
 func (mkv *MiniKv) Delete(key []byte) error {
-	kv := NewKeyValue(key, []byte{}, DELETE, atomic.AddUint64(&mkv.sequenceId, 1))
-	return mkv.memStore.Add(&kv)
-}
+	if len(key) == 0 {
+		return errors.New("key can not be empty")
+	}
 
-func (mkv MiniKv) Get(key []byte) *KeyValue {
-	// mkv.Scan(key, []byte{})
+	mkv.mu.Lock()
+	defer mkv.mu.Unlock()
+
+	_, ok := mkv.indexes[string(key)]
+	if !ok {
+		return errors.New("key not exist")
+	}
+
+	entry := NewEntry(key, nil, DEL)
+
+	err := mkv.diskFile.Write(entry)
+	if err != nil {
+		return nil
+	}
+
+	delete(mkv.indexes, string(key))
 
 	return nil
+}
+
+func (mkv MiniKv) Get(key []byte) ([]byte, error) {
+	if len(key) == 0 {
+		return nil, errors.New("key can not be empty")
+	}
+
+	mkv.mu.RLock()
+	defer mkv.mu.Unlock()
+
+	offset, ok := mkv.indexes[string(key)]
+	if !ok {
+		return nil, errors.New("key not exist")
+	}
+
+	var e *Entry
+	e, err := mkv.diskFile.Read(offset)
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+
+	return e.Value, nil
 }
 
 func (mkv MiniKv) Scan0() {
@@ -67,4 +122,33 @@ func (mkv MiniKv) Scan0() {
 
 func (mkv MiniKv) Scan(start, stop []byte) {
 	// TODO
+}
+
+func (mkv *MiniKv) loadIndexesFromFile() {
+	if mkv.diskFile == nil {
+		return
+	}
+
+	var offset int64
+	for {
+		e, err := mkv.diskFile.Read(offset)
+		if err != nil {
+			// 读取完毕
+			if err == io.EOF {
+				break
+			}
+			return
+		}
+
+		// 设置索引状态
+		mkv.indexes[string(e.Key)] = offset
+
+		if e.Mark == DEL {
+			// 删除内存中的 key
+			delete(mkv.indexes, string(e.Key))
+		}
+
+		offset += e.GetSize()
+	}
+	return
 }
