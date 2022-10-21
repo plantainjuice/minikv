@@ -5,30 +5,27 @@ import (
 )
 
 type Compactor struct {
-	diskfile *DiskFile
-	running  bool
+	mkv     *MiniKv
+	running bool
 }
 
-func NewCompactor(ds *DiskFile) *Compactor {
+func NewCompactor() *Compactor {
 	return &Compactor{
-		diskfile: ds,
-		running:  true,
+		running: false,
 	}
 }
 
-func (c *Compactor) performCompact() error {
-	return nil
+func (c *Compactor) performCompact() {
+	c.mkv.Merge()
 }
 
-func (c *Compactor) Compact() {
+func (c *Compactor) Compact(mkv *MiniKv) {
+	c.mkv = mkv
+
 	for c.running {
-		isCompacted := false
+		time.Sleep(1 * time.Second)
 
 		c.performCompact()
-
-		if !isCompacted {
-			time.Sleep(1 * time.Second)
-		}
 	}
 }
 

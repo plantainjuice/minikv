@@ -22,7 +22,7 @@ func TestPut(t *testing.T) {
 	}
 
 	var wg sync.WaitGroup
-	totalKVSize := 1000
+	totalKVSize := 100
 	routineNum := 5
 	keyPrefix := "test_key_"
 	valPrefix := "test_val_"

@@ -5,7 +5,8 @@ import (
 )
 
 const (
-	FILE_NAME = "minikv.data"
+	DATA_FILE_NAME  = "minikv.data"
+	MERGE_FILE_NAME = "minikv.merge"
 )
 
 type DiskFile struct {
@@ -13,8 +14,13 @@ type DiskFile struct {
 	offset int64
 }
 
-func NewDiskFile(path string) (*DiskFile, error) {
-	fileName := path + string(os.PathSeparator) + FILE_NAME
+func NewDiskFile(dir string) (*DiskFile, error) {
+	fileName := dir + string(os.PathSeparator) + DATA_FILE_NAME
+	return newDiskFile(fileName)
+}
+
+func NewMergeDBFile(dir string) (*DiskFile, error) {
+	fileName := dir + string(os.PathSeparator) + MERGE_FILE_NAME
 	return newDiskFile(fileName)
 }
 
